@@ -26,7 +26,13 @@ A small, single-page trainer for the Hi-Lo card counting system.
 | Orange | Correct, but slower |
 | Red | Miscounted |
 
-Your last 20 results per level are kept in your browser.
+Every round is saved in your browser (IndexedDB), so results survive closing the tab. Each device keeps its own history.
+
+## Pages
+
+- **Train** – the two levels above.
+- **Results** (`#results`) – latest rounds with colour, time and seconds per card, plus the colour mix of your last 50 rounds.
+- **Progress** (`#progress`) – chart of up to your last 500 rounds: seconds per card, colour-coded, with a 10-round average and the green/yellow limits.
 
 ## Run locally
 
