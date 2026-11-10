@@ -10,11 +10,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Layout: one-screen card table — header, felt stage with the dealt cards, action bar below. Single committed felt look. */
+/* Layout: one-screen card table — header + view nav, then a felt stage (Train) or a results list / progress chart. Single committed felt look. */
 :root{
   --felt:#123b2f; --felt-deep:#0b2a21; --rail:#1c4e3f;
   --ivory:#f6f1e4; --ink:#1a1f1c; --red:#b3262e;
-  --text:#e9efe9; --muted:#9fb8ad; --brass:#d8b45a;
+  --text:#e9efe9; --muted:#9fb8ad; --line:rgba(216,180,90,.28); --brass:#d8b45a;
   --good:#3fbf6f; --ok:#e8c547; --slow:#ec8a3a; --bad:#e2484f;
   --f-display:"DM Serif Display",Georgia,serif;
   --f-body:"IBM Plex Sans",system-ui,sans-serif;
@@ -28,18 +28,27 @@ body{margin:0;background:radial-gradient(120% 80% at 50% 30%,var(--felt) 0%,var(
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px;
   -webkit-tap-highlight-color:transparent;touch-action:manipulation}
 [hidden]{display:none!important}
-.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px;min-height:100%}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px;min-height:100%}
 header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
 h1{font-family:var(--f-display);font-weight:400;font-size:1.7rem;margin:0;letter-spacing:.01em}
 h1 span{color:var(--brass)}
+h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
 .legend{display:flex;gap:6px;font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
 .legend b{color:var(--text);font-weight:500}
+
+.nav{display:flex;gap:20px;border-bottom:1px solid var(--line)}
+.nav a{color:var(--muted);text-decoration:none;font-weight:500;font-size:.95rem;padding:6px 0 10px;border-bottom:2px solid transparent;margin-bottom:-1px}
+.nav a[aria-current="page"]{color:var(--text);border-color:var(--brass)}
+.nav a:focus-visible{outline:2px solid var(--brass);outline-offset:3px;border-radius:2px}
+
+.view{display:flex;flex-direction:column;gap:14px;flex:1}
 .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:rgba(0,0,0,.22);padding:4px;border-radius:12px}
 .tab{appearance:none;border:0;background:transparent;color:var(--muted);font:500 .9rem var(--f-body);padding:10px 8px;border-radius:9px;cursor:pointer}
 .tab[aria-selected="true"]{background:var(--rail);color:var(--text)}
 .tab small{display:block;font-size:.7rem;color:var(--muted);font-weight:400;margin-top:2px}
-.tab:focus-visible,.btn:focus-visible,.stage:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
-.stage{flex:1;min-height:300px;border:1px solid rgba(216,180,90,.28);border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px 14px;text-align:center;position:relative;cursor:default;user-select:none}
+.tab:focus-visible,.btn:focus-visible,.chip:focus-visible,.stage:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+.stage{flex:1;min-height:300px;border:1px solid var(--line);border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px 14px;text-align:center;position:relative;cursor:default;user-select:none}
 .stage.dealing{cursor:pointer}
 .hud{position:absolute;top:12px;left:16px;right:16px;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .cards{display:flex;gap:12px;justify-content:center}
@@ -56,6 +65,8 @@ h1 span{color:var(--brass)}
 .copy{color:var(--muted);font-size:.92rem;line-height:1.5;max-width:34ch;margin:0}
 .btn{appearance:none;border:0;border-radius:12px;font:600 1rem var(--f-body);padding:14px 20px;cursor:pointer;background:var(--brass);color:#2a2008}
 .btn.ghost{background:rgba(255,255,255,.08);color:var(--text)}
+.btn.small{font-size:.85rem;padding:9px 14px;border-radius:10px}
+.btn.danger{background:rgba(226,72,79,.16);color:#ffb3b6}
 .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .guess .btn{min-width:84px;font-family:var(--f-mono);font-size:1.25rem}
 .stepper{display:flex;align-items:center;gap:14px}
@@ -67,10 +78,40 @@ h1 span{color:var(--brass)}
 .stats dt{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
 .stats dd{margin:4px 0 0;font-family:var(--f-mono);font-size:1.1rem;font-variant-numeric:tabular-nums}
 .history{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.75rem;color:var(--muted);min-height:18px}
-.dot{width:12px;height:12px;border-radius:50%}
+.dot{width:12px;height:12px;border-radius:50%;flex:none;display:inline-block}
 .scale{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:.72rem;color:var(--muted)}
 .scale span{display:flex;align-items:center;gap:5px}
 .scale .dot{width:9px;height:9px}
+
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.chips{display:flex;gap:6px}
+.chip{appearance:none;border:1px solid var(--line);background:transparent;color:var(--muted);font:500 .8rem var(--f-body);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--rail);color:var(--text);border-color:var(--rail)}
+
+.mix{display:flex;height:10px;border-radius:5px;overflow:hidden;background:rgba(0,0,0,.25)}
+.mix i{display:block;height:100%}
+.counts{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.counts span{display:flex;align-items:center;gap:6px}
+.counts b{color:var(--text);font-family:var(--f-mono);font-weight:500}
+
+.list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.list li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:11px 2px;border-bottom:1px solid rgba(216,180,90,.12)}
+.list .dot{grid-row:span 2}
+.list .what{font-weight:500}
+.list .when{color:var(--muted);font-size:.78rem;grid-column:2}
+.list .num2{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right;grid-row:span 2;font-size:.95rem}
+.list .num2 small{display:block;color:var(--muted);font-size:.72rem}
+.empty{border:1px dashed var(--line);border-radius:16px;padding:28px 18px;text-align:center;color:var(--muted);line-height:1.5}
+.empty strong{display:block;color:var(--text);font-family:var(--f-display);font-weight:400;font-size:1.2rem;margin-bottom:4px}
+
+.chartbox{border:1px solid var(--line);border-radius:18px;padding:12px 8px 6px;background:rgba(0,0,0,.14)}
+.chartbox svg{display:block;width:100%;height:auto;max-width:100%}
+.ax{fill:var(--muted);font:13px var(--f-mono)}
+.grid{stroke:rgba(159,184,173,.14);stroke-width:1}
+.thr{stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+.avg{stroke:var(--text);stroke-width:1.6;fill:none;opacity:.75}
+.note{color:var(--muted);font-size:.8rem;line-height:1.5;margin:0}
+.note .k{display:inline-block;width:18px;height:0;border-top:2px solid var(--text);opacity:.75;vertical-align:middle;margin-right:4px}
 </style>
 </head>
 <body>
@@ -79,12 +120,36 @@ h1 span{color:var(--brass)}
     <h1>Hi<span>·</span>Lo Trainer</h1>
     <div class="legend"><span>2–6 <b>+1</b></span><span>7–9 <b>0</b></span><span>10–A <b>−1</b></span></div>
   </header>
-  <div class="tabs" role="tablist">
-    <button class="tab" role="tab" id="tab-single" aria-selected="true">Level 1 · Last card<small>51 cards, one at a time</small></button>
-    <button class="tab" role="tab" id="tab-pairs" aria-selected="false">Level 2 · Pairs<small>Call the running count</small></button>
-  </div>
-  <section class="stage" id="stage" tabindex="0"></section>
-  <div class="history" id="history"></div>
+  <nav class="nav" aria-label="Views">
+    <a href="#train" id="nav-train">Train</a>
+    <a href="#results" id="nav-results">Results</a>
+    <a href="#progress" id="nav-progress">Progress</a>
+  </nav>
+
+  <section class="view" id="view-train">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-single" aria-selected="true">Level 1 · Last card<small>51 cards, one at a time</small></button>
+      <button class="tab" role="tab" id="tab-pairs" aria-selected="false">Level 2 · Pairs<small>Call the running count</small></button>
+    </div>
+    <div class="stage" id="stage" tabindex="0"></div>
+    <div class="history" id="history"></div>
+  </section>
+
+  <section class="view" id="view-results" hidden>
+    <div class="toolbar">
+      <h2>Latest results</h2>
+      <div class="chips" id="chips-results"></div>
+    </div>
+    <div id="results-body"></div>
+  </section>
+
+  <section class="view" id="view-progress" hidden>
+    <div class="toolbar">
+      <h2>Progress</h2>
+      <div class="chips" id="chips-progress"></div>
+    </div>
+    <div id="progress-body"></div>
+  </section>
 </div>
 
 <script>
@@ -92,13 +157,48 @@ const RANKS=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const SUITS=[['♠',0],['♥',1],['♦',1],['♣',0]];
 const val=r=>['2','3','4','5','6'].includes(r)?1:['7','8','9'].includes(r)?0:-1;
 const fmt=v=>v>0?'+'+v:v<0?'−'+Math.abs(v):'0';
-const COLORS={good:['var(--good)','Green','Casino-ready'],ok:['var(--ok)','Yellow','Correct, now get faster'],slow:['var(--slow)','Orange','Correct, but too slow'],bad:['var(--bad)','Red','Miscounted']};
+const SCORE={
+  good:{c:'var(--good)',name:'Green',label:'Casino-ready'},
+  ok:{c:'var(--ok)',name:'Yellow',label:'Correct, now get faster'},
+  slow:{c:'var(--slow)',name:'Orange',label:'Correct, but too slow'},
+  bad:{c:'var(--bad)',name:'Red',label:'Miscounted'}
+};
+const LEVEL={single:'Level 1 · Last card',pairs:'Level 2 · Pairs'};
+const FAST=0.5, OK=0.8;
 const stage=document.getElementById('stage');
 let mode='single',S=null,tick=null;
 
+/* ---------- Storage (IndexedDB, falls back to memory) ---------- */
+let results=[];
+const Store={
+  db:null,
+  open(){return new Promise(res=>{
+    try{
+      const r=indexedDB.open('hilo-trainer',1);
+      r.onupgradeneeded=()=>{r.result.createObjectStore('results',{keyPath:'id',autoIncrement:true})};
+      r.onsuccess=()=>{this.db=r.result;res()};
+      r.onerror=()=>res();r.onblocked=()=>res();
+    }catch(e){res()}
+  })},
+  tx(mode){return this.db.transaction('results',mode).objectStore('results')},
+  all(){return new Promise(res=>{
+    if(!this.db)return res([]);
+    try{const q=this.tx('readonly').getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([])}catch(e){res([])}
+  })},
+  add(rec){return new Promise(res=>{
+    if(!this.db)return res(rec);
+    try{const q=this.tx('readwrite').add(rec);q.onsuccess=()=>{rec.id=q.result;res(rec)};q.onerror=()=>res(rec)}catch(e){res(rec)}
+  })},
+  clear(){return new Promise(res=>{
+    if(!this.db)return res();
+    try{const q=this.tx('readwrite').clear();q.onsuccess=()=>res();q.onerror=()=>res()}catch(e){res()}
+  })}
+};
+
+/* ---------- Trainer ---------- */
 function deck(){const d=[];for(const r of RANKS)for(const [s,red] of SUITS)d.push({r,s,red});for(let i=d.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[d[i],d[j]]=[d[j],d[i]]}return d}
 function cardHTML(c){return `<div class="card${c.red?' r':''}"><div class="c tl">${c.r}<i>${c.s}</i></div><div class="mid">${c.s}</div><div class="c br">${c.r}<i>${c.s}</i></div></div>`}
-function secs(){return ((performance.now()-S.t0)/1000)}
+function secs(){return (performance.now()-S.t0)/1000}
 
 function intro(){
   clearInterval(tick);S=null;stage.classList.remove('dealing');
@@ -107,7 +207,7 @@ function intro(){
    <p class="copy">${single?'You see 51 cards, one after another. At the end, pick the Hi-Lo value of the missing card.':'You see two cards at a time until the dealer stops somewhere in the deck. Then enter your running count.'}</p>
    <p class="hint">Tap, Space or → for the next cards</p>
    <button class="btn" id="go">Start</button>
-   <div class="scale">${Object.values(COLORS).map(c=>`<span><i class="dot" style="background:${c[0]}"></i>${c[2]}</span>`).join('')}</div>`;
+   <div class="scale">${Object.values(SCORE).map(s=>`<span><i class="dot" style="background:${s.c}"></i>${s.label}</span>`).join('')}</div>`;
   document.getElementById('go').onclick=start;
 }
 
@@ -150,39 +250,150 @@ function ask(){
   }
 }
 
-function finish(guess){
+function scoreOf(correct,perCard){return !correct?'bad':perCard<=FAST?'good':perCard<=OK?'ok':'slow'}
+
+async function finish(guess){
   const rc=S.cards.reduce((a,c)=>a+val(c.r),0);
   const truth=mode==='single'?val(S.missing.r):rc;
-  const right=guess===truth;
-  const per=S.time/S.total;
-  const key=!right?'bad':per<=0.5?'good':per<=0.8?'ok':'slow';
-  const [col,name,label]=COLORS[key];
-  const target=(S.total*0.5).toFixed(0);
-  stage.innerHTML=`<div class="badge" style="background:${col};--glow:${col}"></div>
-    <p class="lead">${name}: ${label}</p>
+  const correct=guess===truth;
+  const perCard=S.time/S.total;
+  const key=scoreOf(correct,perCard);
+  const sc=SCORE[key];
+  const target=(S.total*FAST).toFixed(0);
+  stage.innerHTML=`<div class="badge" style="background:${sc.c};--glow:${sc.c}"></div>
+    <p class="lead">${sc.name}: ${sc.label}</p>
     ${mode==='single'?`<div class="cards">${cardHTML(S.missing)}</div>`:''}
     <dl class="stats">
       <div><dt>Time</dt><dd>${S.time.toFixed(1)} s</dd></div>
       <div><dt>${mode==='single'?'Answer':'Correct'}</dt><dd>${fmt(truth)}</dd></div>
       <div><dt>Your guess</dt><dd>${fmt(guess)}</dd></div>
     </dl>
-    <p class="hint">Green at ${target} s or faster (${S.total} cards, 0.5 s per card)</p>
+    <p class="hint">Green at ${target} s or faster (${S.total} cards, ${FAST} s per card)</p>
     <div class="row"><button class="btn" id="again">Again</button>${mode==='single'&&key==='good'?'<button class="btn ghost" id="lvl">Go to level 2</button>':''}</div>`;
   document.getElementById('again').onclick=start;
   const lvl=document.getElementById('lvl');if(lvl)lvl.onclick=()=>setMode('pairs');
-  saveHist(col);S=null;
+  const rec={ts:Date.now(),mode,score:key,time:+S.time.toFixed(2),total:S.total,guess,truth,correct};
+  S=null;
+  results.push(await Store.add(rec));
+  renderHist();
 }
 
-function hist(){try{return JSON.parse(localStorage.getItem('hilo-hist-'+mode)||'[]')}catch(e){return[]}}
-function saveHist(col){const h=hist();h.push(col);try{localStorage.setItem('hilo-hist-'+mode,JSON.stringify(h.slice(-20)))}catch(e){}renderHist()}
-function renderHist(){const h=hist();document.getElementById('history').innerHTML=h.length?'Recent rounds:'+h.map(c=>`<i class="dot" style="background:${c}"></i>`).join(''):''}
+function renderHist(){
+  const h=results.filter(r=>r.mode===mode).slice(-20);
+  document.getElementById('history').innerHTML=h.length?'Recent rounds:'+h.map(r=>`<i class="dot" style="background:${SCORE[r.score].c}" title="${SCORE[r.score].name}"></i>`).join(''):'';
+}
 
-function setMode(m){mode=m;document.getElementById('tab-single').setAttribute('aria-selected',m==='single');document.getElementById('tab-pairs').setAttribute('aria-selected',m==='pairs');renderHist();intro()}
+function setMode(m){
+  mode=m;
+  document.getElementById('tab-single').setAttribute('aria-selected',m==='single');
+  document.getElementById('tab-pairs').setAttribute('aria-selected',m==='pairs');
+  renderHist();intro();
+}
 document.getElementById('tab-single').onclick=()=>setMode('single');
 document.getElementById('tab-pairs').onclick=()=>setMode('pairs');
 stage.addEventListener('click',e=>{if(!e.target.closest('button'))next()});
-document.addEventListener('keydown',e=>{if([' ','Enter','ArrowRight'].includes(e.key)&&stage.classList.contains('dealing')){e.preventDefault();next()}});
-setMode('single');
+document.addEventListener('keydown',e=>{if([' ','Enter','ArrowRight'].includes(e.key)&&stage.classList.contains('dealing')&&!document.getElementById('view-train').hidden){e.preventDefault();next()}});
+
+/* ---------- Filters shared by Results and Progress ---------- */
+let filter='all';
+const FILTERS=[['all','All'],['single','Level 1'],['pairs','Level 2']];
+function chipsHTML(){return FILTERS.map(([k,l])=>`<button class="chip" data-f="${k}" aria-pressed="${filter===k}">${l}</button>`).join('')}
+function bindChips(id,rerender){
+  const el=document.getElementById(id);el.innerHTML=chipsHTML();
+  el.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filter=b.dataset.f;rerender()});
+}
+const filtered=()=>filter==='all'?results:results.filter(r=>r.mode===filter);
+function countsHTML(list){
+  const n={good:0,ok:0,slow:0,bad:0};list.forEach(r=>n[r.score]++);
+  const tot=list.length||1;
+  return `<div class="mix" aria-hidden="true">${Object.keys(SCORE).map(k=>`<i style="width:${n[k]/tot*100}%;background:${SCORE[k].c}"></i>`).join('')}</div>
+    <div class="counts">${Object.keys(SCORE).map(k=>`<span><i class="dot" style="background:${SCORE[k].c}"></i>${SCORE[k].name} <b>${n[k]}</b></span>`).join('')}</div>`;
+}
+const emptyHTML=`<div class="empty"><strong>No rounds yet</strong>Finish a round in Train and it shows up here. Results stay in this browser.</div>`;
+
+/* ---------- Results view ---------- */
+let shown=50,confirmTimer=null;
+const dtf=new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+function renderResults(){
+  bindChips('chips-results',renderResults);
+  const list=filtered();
+  const body=document.getElementById('results-body');
+  if(!list.length){body.innerHTML=emptyHTML;return}
+  const recent=list.slice().reverse();
+  const last50=list.slice(-50);
+  body.innerHTML=`<p class="note">Last ${last50.length} rounds</p>${countsHTML(last50)}
+    <ul class="list">${recent.slice(0,shown).map(r=>{
+      const s=SCORE[r.score];
+      return `<li><i class="dot" style="background:${s.c}" title="${s.name}"></i>
+        <span class="what">${s.name} · ${LEVEL[r.mode]}</span>
+        <span class="num2">${r.time.toFixed(1)} s<small>${(r.time/r.total).toFixed(2)} s/card</small></span>
+        <span class="when">${dtf.format(r.ts)} · ${r.total} cards · guessed ${fmt(r.guess)}, was ${fmt(r.truth)}</span></li>`}).join('')}</ul>
+    <div class="row">${recent.length>shown?`<button class="btn ghost small" id="more">Show ${Math.min(50,recent.length-shown)} more</button>`:''}
+      <button class="btn danger small" id="clear">Delete all results</button></div>`;
+  const more=document.getElementById('more');if(more)more.onclick=()=>{shown+=50;renderResults()};
+  const clr=document.getElementById('clear');
+  clr.onclick=async()=>{
+    if(clr.dataset.armed){clearTimeout(confirmTimer);await Store.clear();results=[];renderHist();renderResults();return}
+    clr.dataset.armed='1';clr.textContent=`Tap again to delete ${results.length} results`;
+    confirmTimer=setTimeout(()=>{delete clr.dataset.armed;clr.textContent='Delete all results'},3500);
+  };
+}
+
+/* ---------- Progress view (SVG chart, last 500) ---------- */
+function renderProgress(){
+  bindChips('chips-progress',renderProgress);
+  const data=filtered().slice(-500);
+  const body=document.getElementById('progress-body');
+  if(!data.length){body.innerHTML=emptyHTML;return}
+  const W=460,H=300,L=44,R=10,T=26,B=30,w=W-L-R,h=H-T-B;
+  const per=data.map(r=>r.time/r.total);
+  const yMax=Math.min(3,Math.max(1.2,Math.ceil(Math.max(...per)*4)/4));
+  const n=data.length;
+  const x=i=>L+(n===1?w/2:i/(n-1)*w);
+  const y=v=>T+h-(Math.min(v,yMax)/yMax)*h;
+  const step=yMax<=1.5?0.25:0.5;
+  let g='';
+  for(let v=0;v<=yMax+1e-9;v+=step){g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L-8}" y="${y(v)+4}" text-anchor="end">${v.toFixed(2).replace(/0$/,'')}</text>`}
+  g+=`<line class="thr" style="stroke:var(--good)" x1="${L}" x2="${W-R}" y1="${y(FAST)}" y2="${y(FAST)}"/>`;
+  g+=`<line class="thr" style="stroke:var(--ok)" x1="${L}" x2="${W-R}" y1="${y(OK)}" y2="${y(OK)}"/>`;
+  const ticks=n===1?[0]:[0,Math.round((n-1)/2),n-1];
+  ticks.forEach(i=>{g+=`<text class="ax" x="${x(i)}" y="${H-12}" text-anchor="middle">${i+1}</text>`});
+  g+=`<text class="ax" x="${L}" y="${T-12}" text-anchor="start">seconds per card</text>`;
+  const win=10,pts=[];
+  for(let i=0;i<n;i++){const a=per.slice(Math.max(0,i-win+1),i+1);pts.push(`${x(i).toFixed(1)},${y(a.reduce((s,v)=>s+v,0)/a.length).toFixed(1)}`)}
+  if(n>2)g+=`<polyline class="avg" points="${pts.join(' ')}"/>`;
+  const rad=n>250?2.6:n>80?3.4:4.5;
+  data.forEach((r,i)=>{const over=per[i]>yMax;g+=`<circle cx="${x(i).toFixed(1)}" cy="${y(per[i]).toFixed(1)}" r="${rad}" style="fill:${SCORE[r.score].c}"${over?' opacity=".7"':''}><title>#${i+1} · ${SCORE[r.score].name} · ${per[i].toFixed(2)} s/card</title></circle>`});
+  body.innerHTML=`<div class="chartbox"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Seconds per card for the last ${n} rounds">${g}</svg></div>
+    ${countsHTML(data)}
+    <p class="note"><span class="k"></span>10-round average. Dashed lines mark the green (${FAST} s) and yellow (${OK} s) limits per card. Showing the last ${n} of up to 500 rounds, oldest on the left${yMax===3?'; slower rounds sit on the top edge':''}.</p>`;
+}
+
+/* ---------- Routing ---------- */
+const VIEWS=['train','results','progress'];
+let current='train';
+function hashView(){try{const h=location.hash.slice(1);return VIEWS.includes(h)?h:null}catch(e){return null}}
+function go(v){
+  if(v===current)return;
+  try{history.replaceState(null,'','#'+v)}catch(e){}
+  show_(v);
+}
+function route(){show_(hashView()||current)}
+function show_(v){
+  current=v;
+  VIEWS.forEach(k=>{document.getElementById('view-'+k).hidden=k!==v;const a=document.getElementById('nav-'+k);if(k===v)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+  if(v==='results'){shown=50;renderResults()}
+  if(v==='progress')renderProgress();
+}
+window.addEventListener('hashchange',route);
+VIEWS.forEach(k=>document.getElementById('nav-'+k).addEventListener('click',e=>{e.preventDefault();go(k)}));
+
+(async()=>{
+  setMode('single');route();
+  await Store.open();
+  results=(await Store.all()).sort((a,b)=>a.id-b.id);
+  renderHist();route();
+})();
 </script>
 </body>
 </html>
