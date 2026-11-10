@@ -123,6 +123,22 @@ h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
 .thr{stroke-width:1.2;stroke-dasharray:4 4;fill:none}
 .avg{stroke:var(--text);stroke-width:1.6;fill:none;opacity:.75}
 .note{color:var(--muted);font-size:.8rem;line-height:1.5;margin:0}
+.about{display:flex;flex-direction:column;gap:10px;color:var(--muted);font-size:.9rem;line-height:1.55;max-width:62ch}
+.about p{margin:0}.about b{color:var(--text);font-weight:500}
+#limits-form{display:flex;flex-direction:column;gap:12px}
+.lim{border:1px solid var(--line);border-radius:16px;padding:12px 14px 14px;margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+.lim legend{padding:0 6px;margin-left:-6px;font-weight:600;font-size:.95rem}
+.tag{font:500 .68rem var(--f-body);text-transform:uppercase;letter-spacing:.08em;color:#2a2008;background:var(--brass);border-radius:999px;padding:2px 7px;margin-left:6px;vertical-align:2px}
+.lim-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px}
+.lim-row label,.lim-row span.t{font-size:.9rem}
+.lim-row.muted{color:var(--muted)}
+.field{display:flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:.82rem;color:var(--muted)}
+.field input{width:7ch;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:8px;color:var(--text);font:500 1rem var(--f-mono);padding:8px 8px;text-align:right}
+.field input:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+.field input[aria-invalid="true"]{border-color:var(--bad)}
+.preset{grid-column:2/4;font-size:.75rem;color:var(--muted);margin-top:-6px}
+.error{color:#ffb3b6;font-size:.88rem;margin:0;min-height:0}
+.row.left{justify-content:flex-start}
 .note .k{display:inline-block;width:18px;height:0;border-top:2px solid var(--text);opacity:.75;vertical-align:middle;margin-right:4px}
 </style>
 </head>
@@ -136,6 +152,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
     <a href="#train" id="nav-train">Train</a>
     <a href="#results" id="nav-results">Results</a>
     <a href="#progress" id="nav-progress">Progress</a>
+    <a href="#limits" id="nav-limits">Limits</a>
   </nav>
 
   <section class="view" id="view-train">
@@ -163,6 +180,15 @@ h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
     </div>
     <div id="progress-body"></div>
   </section>
+
+  <section class="view" id="view-limits" hidden>
+    <h2>Limits</h2>
+    <div class="about">
+      <p>These limits decide whether a correct round counts as <b>casino-ready</b>, <b>workable</b> or <b>too slow</b>. Any wrong answer always counts as <b>miscounted</b>, whatever the time.</p>
+      <p>The presets are deliberate. Counting down a full deck in about 25 seconds (0.5 s per card) is the usual training standard for counters. Pairs are stricter because high and low cards cancel out. Flash is measured per hand including your tap, close to the time you get at a real table when the dealer flips and sweeps cards. If you're casino-ready at all three, you're well prepared for real card counting. Change them only if you want to start easier and tighten them later.</p>
+    </div>
+    <form id="limits-form" novalidate></form>
+  </section>
 </div>
 
 <script>
@@ -170,23 +196,32 @@ const RANKS=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const SUITS=[['♠',0],['♥',1],['♦',1],['♣',0]];
 const val=r=>['2','3','4','5','6'].includes(r)?1:['7','8','9'].includes(r)?0:-1;
 const fmt=v=>v>0?'+'+v:v<0?'−'+Math.abs(v):'0';
+const num=v=>String(+(+v).toFixed(2));
+const clone=o=>JSON.parse(JSON.stringify(o));
 const SCORE={
-  good:{c:'var(--good)',name:'Green',label:'Casino-ready'},
-  ok:{c:'var(--ok)',name:'Yellow',label:'Correct, now get faster'},
-  slow:{c:'var(--slow)',name:'Orange',label:'Correct, but too slow'},
-  bad:{c:'var(--bad)',name:'Red',label:'Miscounted'}
+  good:{c:'var(--good)',label:'Casino-ready'},
+  ok:{c:'var(--ok)',label:'Workable'},
+  slow:{c:'var(--slow)',label:'Too slow'},
+  bad:{c:'var(--bad)',label:'Miscounted'}
 };
 const LEVEL={single:'Level 1 · Last card',pairs:'Level 2 · Pairs',flash:'Level 3 · Flash'};
 const MODES=['single','pairs','flash'];
+const UNIT={single:'card',pairs:'card',flash:'hand'};
+const DEFAULT_LIMITS={single:{fast:0.5,ok:0.8},pairs:{fast:0.4,ok:0.65},flash:{fast:1.5,ok:2.5}};
+let LIMITS=clone(DEFAULT_LIMITS);
 const FLASH_HANDS=20;
 const INTRO={
   single:['One card is missing from the deck.','You see 51 cards, one after another. At the end, pick the Hi-Lo value of the missing card.','Tap, Space or → for the next cards'],
   pairs:['Count the pairs.','You see two cards at a time until the dealer stops somewhere in the deck. Then enter your running count.','Tap, Space or → for the next cards'],
   flash:['Read the cards at a glance.',`${FLASH_HANDS} hands of 3 or 4 cards. Tap their combined Hi-Lo value as fast as you can. Don't count card by card: spot the pairs that cancel out.`,'Only the time until each tap counts']
 };
-const FAST=0.5, OK=0.8;
 const stage=document.getElementById('stage');
 let mode='single',S=null,tick=null;
+
+/* Seconds per card (levels 1–2) or per hand (level 3): the number the limits apply to. */
+const handsOf=r=>r.hands||r.truth;
+const metric=r=>UNIT[r.mode]==='hand'?r.time/handsOf(r):r.time/r.total;
+function scoreOf(correct,m,lvl){const L=LIMITS[lvl];return !correct?'bad':m<=L.fast?'good':m<=L.ok?'ok':'slow'}
 
 /* ---------- Storage (IndexedDB, falls back to memory) ---------- */
 let results=[];
@@ -194,25 +229,26 @@ const Store={
   db:null,
   open(){return new Promise(res=>{
     try{
-      const r=indexedDB.open('hilo-trainer',1);
-      r.onupgradeneeded=()=>{r.result.createObjectStore('results',{keyPath:'id',autoIncrement:true})};
+      const r=indexedDB.open('hilo-trainer',2);
+      r.onupgradeneeded=()=>{
+        const db=r.result;
+        if(!db.objectStoreNames.contains('results'))db.createObjectStore('results',{keyPath:'id',autoIncrement:true});
+        if(!db.objectStoreNames.contains('settings'))db.createObjectStore('settings',{keyPath:'key'});
+      };
       r.onsuccess=()=>{this.db=r.result;res()};
       r.onerror=()=>res();r.onblocked=()=>res();
     }catch(e){res()}
   })},
-  tx(mode){return this.db.transaction('results',mode).objectStore('results')},
-  all(){return new Promise(res=>{
-    if(!this.db)return res([]);
-    try{const q=this.tx('readonly').getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([])}catch(e){res([])}
+  req(store,mode,fn,fallback){return new Promise(res=>{
+    if(!this.db)return res(fallback);
+    try{const q=fn(this.db.transaction(store,mode).objectStore(store));q.onsuccess=()=>res(q.result);q.onerror=()=>res(fallback)}catch(e){res(fallback)}
   })},
-  add(rec){return new Promise(res=>{
-    if(!this.db)return res(rec);
-    try{const q=this.tx('readwrite').add(rec);q.onsuccess=()=>{rec.id=q.result;res(rec)};q.onerror=()=>res(rec)}catch(e){res(rec)}
-  })},
-  clear(){return new Promise(res=>{
-    if(!this.db)return res();
-    try{const q=this.tx('readwrite').clear();q.onsuccess=()=>res();q.onerror=()=>res()}catch(e){res()}
-  })}
+  all(){return this.req('results','readonly',s=>s.getAll(),[]).then(r=>r||[])},
+  async add(rec){const id=await this.req('results','readwrite',s=>s.add(rec),null);if(id!=null)rec.id=id;return rec},
+  clear(){return this.req('results','readwrite',s=>s.clear())},
+  async get(key){const r=await this.req('settings','readonly',s=>s.get(key),null);return r?r.value:null},
+  set(key,value){return this.req('settings','readwrite',s=>s.put({key,value}))},
+  del(key){return this.req('settings','readwrite',s=>s.delete(key))}
 };
 
 /* ---------- Trainer ---------- */
@@ -221,8 +257,7 @@ function cardHTML(c){return `<div class="card${c.red?' r':''}"><div class="c tl"
 function secs(){return (performance.now()-S.t0)/1000}
 
 function intro(){
-  clearInterval(tick);S=null;stage.classList.remove('dealing');
-  stage.classList.remove('right','wrong');
+  clearInterval(tick);S=null;stage.classList.remove('dealing','right','wrong');
   const [lead,copy,hint]=INTRO[mode];
   stage.innerHTML=`<p class="lead">${lead}</p>
    <p class="copy">${copy}</p>
@@ -272,7 +307,32 @@ function ask(){
   }
 }
 
-function scoreOf(correct,perCard){return !correct?'bad':perCard<=FAST?'good':perCard<=OK?'ok':'slow'}
+async function finish(guess){
+  const rc=S.cards.reduce((a,c)=>a+val(c.r),0);
+  const truth=mode==='single'?val(S.missing.r):rc;
+  const correct=guess===truth;
+  const m=S.time/S.total;
+  const key=scoreOf(correct,m,mode);
+  const sc=SCORE[key];
+  const L=LIMITS[mode];
+  const nextLvl=mode==='single'?'pairs':'flash';
+  stage.innerHTML=`<div class="badge" style="background:${sc.c};--glow:${sc.c}"></div>
+    <p class="lead">${sc.label}</p>
+    ${mode==='single'?`<div class="cards">${cardHTML(S.missing)}</div>`:''}
+    <dl class="stats">
+      <div><dt>Time</dt><dd>${S.time.toFixed(1)} s</dd></div>
+      <div><dt>${mode==='single'?'Answer':'Correct'}</dt><dd>${fmt(truth)}</dd></div>
+      <div><dt>Your guess</dt><dd>${fmt(guess)}</dd></div>
+    </dl>
+    <p class="hint">${m.toFixed(2)} s per card. Casino-ready at ${num(L.fast)} s per card or faster (${num(S.total*L.fast)} s for ${S.total} cards).</p>
+    <div class="row"><button class="btn" id="again">Again</button>${key==='good'?`<button class="btn ghost" id="lvl">Go to level ${MODES.indexOf(nextLvl)+1}</button>`:''}</div>`;
+  document.getElementById('again').onclick=start;
+  const lvl=document.getElementById('lvl');if(lvl)lvl.onclick=()=>setMode(nextLvl);
+  const rec={ts:Date.now(),mode,score:key,time:+S.time.toFixed(2),total:S.total,guess,truth,correct};
+  S=null;
+  results.push(await Store.add(rec));
+  renderHist();
+}
 
 /* ---------- Level 3: Flash ---------- */
 function startFlash(){
@@ -308,49 +368,24 @@ function answerFlash(v){
 async function finishFlash(){
   clearInterval(tick);
   stage.classList.remove('right','wrong');
-  const perCard=S.time/S.cardsSeen;
-  const key=scoreOf(S.right===FLASH_HANDS,perCard);
+  const m=S.time/FLASH_HANDS;
+  const all=S.right===FLASH_HANDS;
+  const key=scoreOf(all,m,'flash');
   const sc=SCORE[key];
-  const target=(S.cardsSeen*FAST).toFixed(1);
-  const miss=S.missed.slice(0,4).map(m=>`<span>${m.cards.map(c=>c.r).join(' ')} → ${fmt(m.truth)} (you: ${fmt(m.v)})</span>`).join('');
+  const L=LIMITS.flash;
+  const miss=S.missed.slice(0,4).map(x=>`<span>${x.cards.map(c=>c.r).join(' ')} → ${fmt(x.truth)} (you: ${fmt(x.v)})</span>`).join('');
   stage.innerHTML=`<div class="badge" style="background:${sc.c};--glow:${sc.c}"></div>
-    <p class="lead">${sc.name}: ${sc.label}</p>
+    <p class="lead">${sc.label}</p>
     <dl class="stats">
       <div><dt>Time</dt><dd>${S.time.toFixed(1)} s</dd></div>
       <div><dt>Correct</dt><dd>${S.right}/${FLASH_HANDS}</dd></div>
-      <div><dt>Per card</dt><dd>${perCard.toFixed(2)} s</dd></div>
+      <div><dt>Per hand</dt><dd>${m.toFixed(2)} s</dd></div>
     </dl>
     ${miss?`<p class="missed">${miss}</p>`:''}
-    <p class="hint">Green: all ${FLASH_HANDS} right and ${target} s or faster (${S.cardsSeen} cards, ${FAST} s per card)</p>
+    <p class="hint">Casino-ready: all ${FLASH_HANDS} hands right at ${num(L.fast)} s per hand or faster (${num(FLASH_HANDS*L.fast)} s in total).</p>
     <div class="row"><button class="btn" id="again">Again</button></div>`;
   document.getElementById('again').onclick=start;
-  const rec={ts:Date.now(),mode:'flash',score:key,time:+S.time.toFixed(2),total:S.cardsSeen,guess:S.right,truth:FLASH_HANDS,correct:S.right===FLASH_HANDS};
-  S=null;
-  results.push(await Store.add(rec));
-  renderHist();
-}
-
-async function finish(guess){
-  const rc=S.cards.reduce((a,c)=>a+val(c.r),0);
-  const truth=mode==='single'?val(S.missing.r):rc;
-  const correct=guess===truth;
-  const perCard=S.time/S.total;
-  const key=scoreOf(correct,perCard);
-  const sc=SCORE[key];
-  const target=(S.total*FAST).toFixed(0);
-  stage.innerHTML=`<div class="badge" style="background:${sc.c};--glow:${sc.c}"></div>
-    <p class="lead">${sc.name}: ${sc.label}</p>
-    ${mode==='single'?`<div class="cards">${cardHTML(S.missing)}</div>`:''}
-    <dl class="stats">
-      <div><dt>Time</dt><dd>${S.time.toFixed(1)} s</dd></div>
-      <div><dt>${mode==='single'?'Answer':'Correct'}</dt><dd>${fmt(truth)}</dd></div>
-      <div><dt>Your guess</dt><dd>${fmt(guess)}</dd></div>
-    </dl>
-    <p class="hint">Green at ${target} s or faster (${S.total} cards, ${FAST} s per card)</p>
-    <div class="row"><button class="btn" id="again">Again</button>${key==='good'?`<button class="btn ghost" id="lvl">Go to level ${mode==='single'?2:3}</button>`:''}</div>`;
-  document.getElementById('again').onclick=start;
-  const lvl=document.getElementById('lvl');if(lvl)lvl.onclick=()=>setMode(mode==='single'?'pairs':'flash');
-  const rec={ts:Date.now(),mode,score:key,time:+S.time.toFixed(2),total:S.total,guess,truth,correct};
+  const rec={ts:Date.now(),mode:'flash',score:key,time:+S.time.toFixed(2),total:S.cardsSeen,hands:FLASH_HANDS,guess:S.right,truth:FLASH_HANDS,correct:all};
   S=null;
   results.push(await Store.add(rec));
   renderHist();
@@ -358,7 +393,7 @@ async function finish(guess){
 
 function renderHist(){
   const h=results.filter(r=>r.mode===mode).slice(-20);
-  document.getElementById('history').innerHTML=h.length?'Recent rounds:'+h.map(r=>`<i class="dot" style="background:${SCORE[r.score].c}" title="${SCORE[r.score].name}"></i>`).join(''):'';
+  document.getElementById('history').innerHTML=h.length?'Recent rounds:'+h.map(r=>`<i class="dot" style="background:${SCORE[r.score].c}" title="${SCORE[r.score].label}"></i>`).join(''):'';
 }
 
 function setMode(m){
@@ -383,7 +418,7 @@ function countsHTML(list){
   const n={good:0,ok:0,slow:0,bad:0};list.forEach(r=>n[r.score]++);
   const tot=list.length||1;
   return `<div class="mix" aria-hidden="true">${Object.keys(SCORE).map(k=>`<i style="width:${n[k]/tot*100}%;background:${SCORE[k].c}"></i>`).join('')}</div>
-    <div class="counts">${Object.keys(SCORE).map(k=>`<span><i class="dot" style="background:${SCORE[k].c}"></i>${SCORE[k].name} <b>${n[k]}</b></span>`).join('')}</div>`;
+    <div class="counts">${Object.keys(SCORE).map(k=>`<span><i class="dot" style="background:${SCORE[k].c}"></i>${SCORE[k].label} <b>${n[k]}</b></span>`).join('')}</div>`;
 }
 const emptyHTML=`<div class="empty"><strong>No rounds yet</strong>Finish a round in Train and it shows up here. Results stay in this browser.</div>`;
 
@@ -400,9 +435,9 @@ function renderResults(){
   body.innerHTML=`<p class="note">Last ${last50.length} rounds</p>${countsHTML(last50)}
     <ul class="list">${recent.slice(0,shown).map(r=>{
       const s=SCORE[r.score];
-      return `<li><i class="dot" style="background:${s.c}" title="${s.name}"></i>
-        <span class="what">${s.name} · ${LEVEL[r.mode]}</span>
-        <span class="num2">${r.time.toFixed(1)} s<small>${(r.time/r.total).toFixed(2)} s/card</small></span>
+      return `<li><i class="dot" style="background:${s.c}" title="${s.label}"></i>
+        <span class="what">${s.label} · ${LEVEL[r.mode]}</span>
+        <span class="num2">${r.time.toFixed(1)} s<small>${metric(r).toFixed(2)} s/${UNIT[r.mode]}</small></span>
         <span class="when">${dtf.format(r.ts)} · ${r.total} cards · ${r.mode==='flash'?`${r.guess}/${r.truth} hands right`:`guessed ${fmt(r.guess)}, was ${fmt(r.truth)}`}</span></li>`}).join('')}</ul>
     <div class="row">${recent.length>shown?`<button class="btn ghost small" id="more">Show ${Math.min(50,recent.length-shown)} more</button>`:''}
       <button class="btn danger small" id="clear">Delete all results</button></div>`;
@@ -416,37 +451,88 @@ function renderResults(){
 }
 
 /* ---------- Progress view (SVG chart, last 500) ---------- */
+function niceStep(range){for(const s of [0.1,0.25,0.5,1,2])if(range/s<=6)return s;return 5}
 function renderProgress(){
   bindChips('chips-progress',renderProgress);
   const data=filtered().slice(-500);
   const body=document.getElementById('progress-body');
   if(!data.length){body.innerHTML=emptyHTML;return}
+  const unit=filter==='flash'?'hand':'card';
+  const lim=filter==='all'?null:LIMITS[filter];
   const W=460,H=300,L=44,R=10,T=26,B=30,w=W-L-R,h=H-T-B;
-  const per=data.map(r=>r.time/r.total);
-  const yMax=Math.min(3,Math.max(1.2,Math.ceil(Math.max(...per)*4)/4));
+  const per=data.map(r=>unit==='hand'?metric(r):r.time/r.total);
+  const lo=lim?lim.ok*1.5:1.2, cap=lim?lim.ok*4:3;
+  const yMax=Math.min(cap,Math.max(lo,Math.ceil(Math.max(...per)*4)/4));
   const n=data.length;
   const x=i=>L+(n===1?w/2:i/(n-1)*w);
   const y=v=>T+h-(Math.min(v,yMax)/yMax)*h;
-  const step=yMax<=1.5?0.25:0.5;
+  const step=niceStep(yMax);
   let g='';
-  for(let v=0;v<=yMax+1e-9;v+=step){g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L-8}" y="${y(v)+4}" text-anchor="end">${v.toFixed(2).replace(/0$/,'')}</text>`}
-  g+=`<line class="thr" style="stroke:var(--good)" x1="${L}" x2="${W-R}" y1="${y(FAST)}" y2="${y(FAST)}"/>`;
-  g+=`<line class="thr" style="stroke:var(--ok)" x1="${L}" x2="${W-R}" y1="${y(OK)}" y2="${y(OK)}"/>`;
+  for(let v=0;v<=yMax+1e-9;v+=step){g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L-8}" y="${y(v)+4}" text-anchor="end">${num(v)}</text>`}
+  if(lim){
+    g+=`<line class="thr" style="stroke:var(--good)" x1="${L}" x2="${W-R}" y1="${y(lim.fast)}" y2="${y(lim.fast)}"/>`;
+    g+=`<line class="thr" style="stroke:var(--ok)" x1="${L}" x2="${W-R}" y1="${y(lim.ok)}" y2="${y(lim.ok)}"/>`;
+  }
   const ticks=n===1?[0]:[0,Math.round((n-1)/2),n-1];
   ticks.forEach(i=>{g+=`<text class="ax" x="${x(i)}" y="${H-12}" text-anchor="middle">${i+1}</text>`});
-  g+=`<text class="ax" x="${L}" y="${T-12}" text-anchor="start">seconds per card</text>`;
+  g+=`<text class="ax" x="${L}" y="${T-12}" text-anchor="start">seconds per ${unit}</text>`;
   const win=10,pts=[];
   for(let i=0;i<n;i++){const a=per.slice(Math.max(0,i-win+1),i+1);pts.push(`${x(i).toFixed(1)},${y(a.reduce((s,v)=>s+v,0)/a.length).toFixed(1)}`)}
   if(n>2)g+=`<polyline class="avg" points="${pts.join(' ')}"/>`;
   const rad=n>250?2.6:n>80?3.4:4.5;
-  data.forEach((r,i)=>{const over=per[i]>yMax;g+=`<circle cx="${x(i).toFixed(1)}" cy="${y(per[i]).toFixed(1)}" r="${rad}" style="fill:${SCORE[r.score].c}"${over?' opacity=".7"':''}><title>#${i+1} · ${SCORE[r.score].name} · ${per[i].toFixed(2)} s/card</title></circle>`});
-  body.innerHTML=`<div class="chartbox"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Seconds per card for the last ${n} rounds">${g}</svg></div>
+  data.forEach((r,i)=>{const over=per[i]>yMax;g+=`<circle cx="${x(i).toFixed(1)}" cy="${y(per[i]).toFixed(1)}" r="${rad}" style="fill:${SCORE[r.score].c}"${over?' opacity=".7"':''}><title>#${i+1} · ${SCORE[r.score].label} · ${per[i].toFixed(2)} s/${unit}</title></circle>`});
+  const limNote=lim?`Dashed lines mark your casino-ready (${num(lim.fast)} s) and workable (${num(lim.ok)} s) limits per ${unit}.`:'Pick a level to see its limits; each level has its own.';
+  body.innerHTML=`<div class="chartbox"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Seconds per ${unit} for the last ${n} rounds">${g}</svg></div>
     ${countsHTML(data)}
-    <p class="note"><span class="k"></span>10-round average. Dashed lines mark the green (${FAST} s) and yellow (${OK} s) limits per card. Showing the last ${n} of up to 500 rounds, oldest on the left${yMax===3?'; slower rounds sit on the top edge':''}.</p>`;
+    <p class="note"><span class="k"></span>10-round average. ${limNote} Showing the last ${n} of up to 500 rounds, oldest on the left${per.some(v=>v>yMax)?'; slower rounds sit on the top edge':''}. Each dot keeps the colour it got with the limits at the time.</p>`;
+}
+
+/* ---------- Limits view ---------- */
+let resetTimer=null;
+function validLimits(o){return o&&MODES.every(m=>o[m]&&isFinite(o[m].fast)&&isFinite(o[m].ok)&&o[m].fast>0&&o[m].ok>o[m].fast)}
+function renderLimits(status){
+  const f=document.getElementById('limits-form');
+  f.innerHTML=MODES.map(m=>{
+    const L=LIMITS[m],D=DEFAULT_LIMITS[m],u=UNIT[m];
+    const custom=L.fast!==D.fast||L.ok!==D.ok;
+    return `<fieldset class="lim"><legend>${LEVEL[m]}${custom?'<span class="tag">Custom</span>':''}</legend>
+      <div class="lim-row"><i class="dot" style="background:var(--good)"></i><label for="lim-${m}-fast">Casino-ready up to</label><span class="field"><input id="lim-${m}-fast" inputmode="decimal" autocomplete="off" value="${num(L.fast)}"> s/${u}</span></div>
+      <div class="lim-row"><i class="dot" style="background:var(--ok)"></i><label for="lim-${m}-ok">Workable up to</label><span class="field"><input id="lim-${m}-ok" inputmode="decimal" autocomplete="off" value="${num(L.ok)}"> s/${u}</span></div>
+      <div class="lim-row muted"><i class="dot" style="background:var(--slow)"></i><span class="t">Too slow above that</span><span></span></div>
+      <span class="preset">Preset: ${num(D.fast)} / ${num(D.ok)} s per ${u}</span>
+    </fieldset>`}).join('')+
+    `<p class="error" id="lim-err" role="alert"></p>
+    <div class="row left"><button class="btn" type="button" id="lim-save">Save limits</button><button class="btn ghost" type="button" id="lim-reset">Reset to presets</button></div>
+    <p class="hint" id="lim-status" role="status">${status||''}</p>`;
+  const save=async()=>{
+    const next={},errs=[];
+    f.querySelectorAll('input').forEach(i=>i.removeAttribute('aria-invalid'));
+    for(const m of MODES){
+      const fi=document.getElementById(`lim-${m}-fast`),oi=document.getElementById(`lim-${m}-ok`);
+      const fv=parseFloat(fi.value.replace(',','.')),ov=parseFloat(oi.value.replace(',','.'));
+      const lvl=`Level ${MODES.indexOf(m)+1}`;
+      if(!(fv>0&&fv<=20)){fi.setAttribute('aria-invalid','true');errs.push(`${lvl}: enter a casino-ready limit between 0 and 20 seconds.`);continue}
+      if(!(ov>0&&ov<=30)){oi.setAttribute('aria-invalid','true');errs.push(`${lvl}: enter a workable limit between 0 and 30 seconds.`);continue}
+      if(ov<=fv){oi.setAttribute('aria-invalid','true');errs.push(`${lvl}: the workable limit must be higher than the casino-ready limit.`);continue}
+      next[m]={fast:+fv.toFixed(2),ok:+ov.toFixed(2)};
+    }
+    if(errs.length){document.getElementById('lim-err').textContent=errs.join(' ');document.getElementById('lim-status').textContent='Not saved.';return}
+    LIMITS=next;await Store.set('limits',LIMITS);
+    renderLimits('Saved. New rounds use these limits.');
+  };
+  document.getElementById('lim-save').onclick=save;
+  f.onsubmit=e=>{e.preventDefault();save()};
+  f.onkeydown=e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();save()}};
+  const rb=document.getElementById('lim-reset');
+  rb.onclick=async()=>{
+    if(rb.dataset.armed){clearTimeout(resetTimer);LIMITS=clone(DEFAULT_LIMITS);await Store.del('limits');renderLimits('Presets restored for all levels.');return}
+    rb.dataset.armed='1';rb.textContent='Tap again to reset all levels';
+    resetTimer=setTimeout(()=>{delete rb.dataset.armed;rb.textContent='Reset to presets'},3500);
+  };
 }
 
 /* ---------- Routing ---------- */
-const VIEWS=['train','results','progress'];
+const VIEWS=['train','results','progress','limits'];
 let current='train';
 function hashView(){try{const h=location.hash.slice(1);return VIEWS.includes(h)?h:null}catch(e){return null}}
 function go(v){
@@ -460,6 +546,7 @@ function show_(v){
   VIEWS.forEach(k=>{document.getElementById('view-'+k).hidden=k!==v;const a=document.getElementById('nav-'+k);if(k===v)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
   if(v==='results'){shown=50;renderResults()}
   if(v==='progress')renderProgress();
+  if(v==='limits')renderLimits();
 }
 window.addEventListener('hashchange',route);
 VIEWS.forEach(k=>document.getElementById('nav-'+k).addEventListener('click',e=>{e.preventDefault();go(k)}));
@@ -467,6 +554,8 @@ VIEWS.forEach(k=>document.getElementById('nav-'+k).addEventListener('click',e=>{
 (async()=>{
   setMode('single');route();
   await Store.open();
+  const saved=await Store.get('limits');
+  if(validLimits(saved))LIMITS=saved;
   results=(await Store.all()).sort((a,b)=>a.id-b.id);
   renderHist();route();
 })();

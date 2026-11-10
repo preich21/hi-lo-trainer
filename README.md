@@ -20,20 +20,24 @@ A small, single-page trainer for the Hi-Lo card counting system.
 
 ## Scoring
 
-| Color | Meaning |
-|---|---|
-| Green | Correct, at most 0.5 s per card (≈ 25 s for a full deck) |
-| Yellow | Correct, up to 0.8 s per card |
-| Orange | Correct, but slower |
-| Red | Miscounted |
+Any wrong answer is **Miscounted** (red). Correct rounds are rated by speed. Preset limits:
 
-Every round is saved in your browser (IndexedDB), so results survive closing the tab. Each device keeps its own history.
+| Level | Casino-ready (green) | Workable (yellow) | Too slow (orange) |
+|---|---|---|---|
+| 1 · Last card | ≤ 0.5 s per card (≈ 25 s per deck) | ≤ 0.8 s per card | slower |
+| 2 · Pairs | ≤ 0.4 s per card | ≤ 0.65 s per card | slower |
+| 3 · Flash | ≤ 1.5 s per hand | ≤ 2.5 s per hand | slower |
+
+The limits can be changed per level on the Limits page and reset to these presets.
+
+Rounds and limits are saved in your browser (IndexedDB), so they survive closing the tab. Each device keeps its own.
 
 ## Pages
 
-- **Train** – the two levels above.
-- **Results** (`#results`) – latest rounds with colour, time and seconds per card, plus the colour mix of your last 50 rounds.
-- **Progress** (`#progress`) – chart of up to your last 500 rounds: seconds per card, colour-coded, with a 10-round average and the green/yellow limits.
+- **Train** – the three levels above.
+- **Results** (`#results`) – latest rounds with rating, time and seconds per card or hand, plus the mix of your last 50 rounds.
+- **Progress** (`#progress`) – chart of up to your last 500 rounds, colour-coded, with a 10-round average and the limit lines of the selected level.
+- **Limits** (`#limits`) – set your own limits per level.
 
 ## Run locally
 
