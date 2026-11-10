@@ -16,6 +16,7 @@ A small, single-page trainer for the Hi-Lo card counting system.
 
 1. **Last card** – 51 cards are dealt one at a time. Name the Hi-Lo value of the missing card.
 2. **Pairs** – cards come two at a time until the dealer stops somewhere in the deck. Enter your running count.
+3. **Flash** – 20 hands of 3 or 4 cards. Tap their combined value as fast as you can. Trains reading cards in groups instead of one by one.
 
 ## Scoring
 
