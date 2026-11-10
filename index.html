@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b2a21">
+<meta name="description" content="Practice Hi-Lo card counting: guess the missing card, then count pairs against the clock.">
+<title>Hi-Lo Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one-screen card table — header, felt stage with the dealt cards, action bar below. Single committed felt look. */
+:root{
+  --felt:#123b2f; --felt-deep:#0b2a21; --rail:#1c4e3f;
+  --ivory:#f6f1e4; --ink:#1a1f1c; --red:#b3262e;
+  --text:#e9efe9; --muted:#9fb8ad; --brass:#d8b45a;
+  --good:#3fbf6f; --ok:#e8c547; --slow:#ec8a3a; --bad:#e2484f;
+  --f-display:"DM Serif Display",Georgia,serif;
+  --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(120% 80% at 50% 30%,var(--felt) 0%,var(--felt-deep) 100%) fixed,var(--felt-deep);color:var(--text);font-family:var(--f-body);font-size:14px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation}
+[hidden]{display:none!important}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px;min-height:100%}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-weight:400;font-size:1.7rem;margin:0;letter-spacing:.01em}
+h1 span{color:var(--brass)}
+.legend{display:flex;gap:6px;font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
+.legend b{color:var(--text);font-weight:500}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:rgba(0,0,0,.22);padding:4px;border-radius:12px}
+.tab{appearance:none;border:0;background:transparent;color:var(--muted);font:500 .9rem var(--f-body);padding:10px 8px;border-radius:9px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--rail);color:var(--text)}
+.tab small{display:block;font-size:.7rem;color:var(--muted);font-weight:400;margin-top:2px}
+.tab:focus-visible,.btn:focus-visible,.stage:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.stage{flex:1;min-height:300px;border:1px solid rgba(216,180,90,.28);border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px 14px;text-align:center;position:relative;cursor:default;user-select:none}
+.stage.dealing{cursor:pointer}
+.hud{position:absolute;top:12px;left:16px;right:16px;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.cards{display:flex;gap:12px;justify-content:center}
+.card{width:118px;aspect-ratio:5/7;max-width:42vw;background:var(--ivory);color:var(--ink);border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.35);position:relative;display:flex;align-items:center;justify-content:center;animation:deal .14s ease-out}
+.card.r{color:var(--red)}
+.card .c{position:absolute;font-family:var(--f-display);line-height:.95;font-size:1.25rem;text-align:center}
+.card .tl{top:7px;left:8px}.card .br{bottom:7px;right:8px;transform:rotate(180deg)}
+.card .mid{font-family:var(--f-display);font-size:3.2rem}
+.card .c i{display:block;font-style:normal;font-size:1rem}
+@keyframes deal{from{transform:translateY(-10px) scale(.96);opacity:.4}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.card{animation:none}}
+.hint{color:var(--muted);font-size:.85rem;margin:0}
+.lead{font-family:var(--f-display);font-size:1.45rem;margin:0;text-wrap:balance}
+.copy{color:var(--muted);font-size:.92rem;line-height:1.5;max-width:34ch;margin:0}
+.btn{appearance:none;border:0;border-radius:12px;font:600 1rem var(--f-body);padding:14px 20px;cursor:pointer;background:var(--brass);color:#2a2008}
+.btn.ghost{background:rgba(255,255,255,.08);color:var(--text)}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.guess .btn{min-width:84px;font-family:var(--f-mono);font-size:1.25rem}
+.stepper{display:flex;align-items:center;gap:14px}
+.stepper .btn{width:56px;height:56px;padding:0;font-size:1.6rem}
+.num{font-family:var(--f-mono);font-size:2.4rem;min-width:3.5ch;font-variant-numeric:tabular-nums}
+.badge{width:92px;height:92px;border-radius:50%;box-shadow:0 0 0 6px rgba(255,255,255,.06),0 0 40px var(--glow,transparent)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:360px;margin:0}
+.stats div{background:rgba(0,0,0,.2);border-radius:10px;padding:10px 6px}
+.stats dt{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.stats dd{margin:4px 0 0;font-family:var(--f-mono);font-size:1.1rem;font-variant-numeric:tabular-nums}
+.history{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.75rem;color:var(--muted);min-height:18px}
+.dot{width:12px;height:12px;border-radius:50%}
+.scale{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:.72rem;color:var(--muted)}
+.scale span{display:flex;align-items:center;gap:5px}
+.scale .dot{width:9px;height:9px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Hi<span>·</span>Lo Trainer</h1>
+    <div class="legend"><span>2–6 <b>+1</b></span><span>7–9 <b>0</b></span><span>10–A <b>−1</b></span></div>
+  </header>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-single" aria-selected="true">Level 1 · Last card<small>51 cards, one at a time</small></button>
+    <button class="tab" role="tab" id="tab-pairs" aria-selected="false">Level 2 · Pairs<small>Call the running count</small></button>
+  </div>
+  <section class="stage" id="stage" tabindex="0"></section>
+  <div class="history" id="history"></div>
+</div>
+
+<script>
+const RANKS=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const SUITS=[['♠',0],['♥',1],['♦',1],['♣',0]];
+const val=r=>['2','3','4','5','6'].includes(r)?1:['7','8','9'].includes(r)?0:-1;
+const fmt=v=>v>0?'+'+v:v<0?'−'+Math.abs(v):'0';
+const COLORS={good:['var(--good)','Green','Casino-ready'],ok:['var(--ok)','Yellow','Correct, now get faster'],slow:['var(--slow)','Orange','Correct, but too slow'],bad:['var(--bad)','Red','Miscounted']};
+const stage=document.getElementById('stage');
+let mode='single',S=null,tick=null;
+
+function deck(){const d=[];for(const r of RANKS)for(const [s,red] of SUITS)d.push({r,s,red});for(let i=d.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[d[i],d[j]]=[d[j],d[i]]}return d}
+function cardHTML(c){return `<div class="card${c.red?' r':''}"><div class="c tl">${c.r}<i>${c.s}</i></div><div class="mid">${c.s}</div><div class="c br">${c.r}<i>${c.s}</i></div></div>`}
+function secs(){return ((performance.now()-S.t0)/1000)}
+
+function intro(){
+  clearInterval(tick);S=null;stage.classList.remove('dealing');
+  const single=mode==='single';
+  stage.innerHTML=`<p class="lead">${single?'One card is missing from the deck.':'Count the pairs.'}</p>
+   <p class="copy">${single?'You see 51 cards, one after another. At the end, pick the Hi-Lo value of the missing card.':'You see two cards at a time until the dealer stops somewhere in the deck. Then enter your running count.'}</p>
+   <p class="hint">Tap, Space or → for the next cards</p>
+   <button class="btn" id="go">Start</button>
+   <div class="scale">${Object.values(COLORS).map(c=>`<span><i class="dot" style="background:${c[0]}"></i>${c[2]}</span>`).join('')}</div>`;
+  document.getElementById('go').onclick=start;
+}
+
+function start(){
+  const d=deck();
+  if(mode==='single'){const missing=d.pop();S={cards:d,missing,step:1}}
+  else{const n=2*(10+(Math.random()*11|0));S={cards:d.slice(0,n),step:2}}
+  S.i=0;S.t0=performance.now();S.total=S.cards.length;
+  stage.classList.add('dealing');
+  show();
+  tick=setInterval(()=>{const t=document.getElementById('t');if(t)t.textContent=secs().toFixed(1)+' s'},100);
+}
+
+function show(){
+  const shown=S.cards.slice(S.i,S.i+S.step);
+  stage.innerHTML=`<div class="hud"><span>${Math.min(S.i+S.step,S.total)} / ${S.total}</span><span id="t">${secs().toFixed(1)} s</span></div>
+    <div class="cards">${shown.map(cardHTML).join('')}</div><p class="hint">Tap to continue</p>`;
+}
+
+function next(){
+  if(!S||!stage.classList.contains('dealing'))return;
+  S.i+=S.step;
+  if(S.i>=S.total){S.time=secs();clearInterval(tick);stage.classList.remove('dealing');ask()}else show();
+}
+
+function ask(){
+  if(mode==='single'){
+    stage.innerHTML=`<p class="lead">What's the value of the missing card?</p>
+      <div class="row guess">${[1,0,-1].map(v=>`<button class="btn ghost" data-v="${v}">${fmt(v)}</button>`).join('')}</div>`;
+    stage.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>finish(+b.dataset.v));
+  }else{
+    let g=0;
+    stage.innerHTML=`<p class="lead">What's your running count?</p>
+      <div class="stepper"><button class="btn ghost" id="minus" aria-label="minus one">−</button><div class="num" id="g">0</div><button class="btn ghost" id="plus" aria-label="plus one">+</button></div>
+      <button class="btn" id="ok">Check</button>`;
+    const out=document.getElementById('g');
+    document.getElementById('minus').onclick=()=>{g--;out.textContent=fmt(g)};
+    document.getElementById('plus').onclick=()=>{g++;out.textContent=fmt(g)};
+    document.getElementById('ok').onclick=()=>finish(g);
+  }
+}
+
+function finish(guess){
+  const rc=S.cards.reduce((a,c)=>a+val(c.r),0);
+  const truth=mode==='single'?val(S.missing.r):rc;
+  const right=guess===truth;
+  const per=S.time/S.total;
+  const key=!right?'bad':per<=0.5?'good':per<=0.8?'ok':'slow';
+  const [col,name,label]=COLORS[key];
+  const target=(S.total*0.5).toFixed(0);
+  stage.innerHTML=`<div class="badge" style="background:${col};--glow:${col}"></div>
+    <p class="lead">${name}: ${label}</p>
+    ${mode==='single'?`<div class="cards">${cardHTML(S.missing)}</div>`:''}
+    <dl class="stats">
+      <div><dt>Time</dt><dd>${S.time.toFixed(1)} s</dd></div>
+      <div><dt>${mode==='single'?'Answer':'Correct'}</dt><dd>${fmt(truth)}</dd></div>
+      <div><dt>Your guess</dt><dd>${fmt(guess)}</dd></div>
+    </dl>
+    <p class="hint">Green at ${target} s or faster (${S.total} cards, 0.5 s per card)</p>
+    <div class="row"><button class="btn" id="again">Again</button>${mode==='single'&&key==='good'?'<button class="btn ghost" id="lvl">Go to level 2</button>':''}</div>`;
+  document.getElementById('again').onclick=start;
+  const lvl=document.getElementById('lvl');if(lvl)lvl.onclick=()=>setMode('pairs');
+  saveHist(col);S=null;
+}
+
+function hist(){try{return JSON.parse(localStorage.getItem('hilo-hist-'+mode)||'[]')}catch(e){return[]}}
+function saveHist(col){const h=hist();h.push(col);try{localStorage.setItem('hilo-hist-'+mode,JSON.stringify(h.slice(-20)))}catch(e){}renderHist()}
+function renderHist(){const h=hist();document.getElementById('history').innerHTML=h.length?'Recent rounds:'+h.map(c=>`<i class="dot" style="background:${c}"></i>`).join(''):''}
+
+function setMode(m){mode=m;document.getElementById('tab-single').setAttribute('aria-selected',m==='single');document.getElementById('tab-pairs').setAttribute('aria-selected',m==='pairs');renderHist();intro()}
+document.getElementById('tab-single').onclick=()=>setMode('single');
+document.getElementById('tab-pairs').onclick=()=>setMode('pairs');
+stage.addEventListener('click',e=>{if(!e.target.closest('button'))next()});
+document.addEventListener('keydown',e=>{if([' ','Enter','ArrowRight'].includes(e.key)&&stage.classList.contains('dealing')){e.preventDefault();next()}});
+setMode('single');
+</script>
+</body>
+</html>
