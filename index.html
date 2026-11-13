@@ -36,8 +36,8 @@ h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
 .legend{display:flex;gap:6px;font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
 .legend b{color:var(--text);font-weight:500}
 
-.nav{display:flex;gap:20px;border-bottom:1px solid var(--line)}
-.nav a{color:var(--muted);text-decoration:none;font-weight:500;font-size:.95rem;padding:6px 0 10px;border-bottom:2px solid transparent;margin-bottom:-1px}
+.nav{display:flex;gap:16px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.nav a{color:var(--muted);text-decoration:none;font-weight:500;font-size:.95rem;padding:6px 0 10px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
 .nav a[aria-current="page"]{color:var(--text);border-color:var(--brass)}
 .nav a:focus-visible{outline:2px solid var(--brass);outline-offset:3px;border-radius:2px}
 
@@ -153,6 +153,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
     <a href="#results" id="nav-results">Results</a>
     <a href="#progress" id="nav-progress">Progress</a>
     <a href="#limits" id="nav-limits">Limits</a>
+    <a href="strategy.html" id="nav-strategy">Strategy</a>
   </nav>
 
   <section class="view" id="view-train">

@@ -38,6 +38,19 @@ Rounds and limits are saved in your browser (IndexedDB), so they survive closing
 - **Results** (`#results`) – latest rounds with rating, time and seconds per card or hand, plus the mix of your last 50 rounds.
 - **Progress** (`#progress`) – chart of up to your last 500 rounds, colour-coded, with a 10-round average and the limit lines of the selected level.
 - **Limits** (`#limits`) – set your own limits per level.
+- **Strategy** (`strategy.html`) – basic strategy trainer, see below.
+
+## Basic strategy trainer
+
+`strategy.html` is a separate page with three tabs:
+
+- **Drill** – 20 hands with the dealer's upcard. Tap Hit, Stand, Double, Split or Surrender (keys H, S, D, P, R). Hands you get wrong come back more often. Rated Casino-ready (≤ 1.5 s per hand), Workable (≤ 3 s), Too slow, or Misplayed.
+- **Chart** – the full strategy for the selected table rules, with your mistakes per hand.
+- **Rules** – hole card yes/no, dealer stands/hits soft 17, double after split, late surrender, plus the speed limits.
+
+The strategy is the standard 4–8 deck chart (Wizard of Odds) with the usual adjustments for H17, no double after split and no surrender, and the European no-hole-card changes: hit 11 vs 10, hit 8,8 vs 10/A, hit A,A vs A. Default rules: no hole card, dealer stands on soft 17, double after split, no surrender.
+
+The page stores its data in its own IndexedDB database, separate from the counting results.
 
 ## Run locally
 

@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b2a21">
+<meta name="description" content="Drill blackjack basic strategy until every decision is automatic.">
+<title>Basic Strategy · Hi-Lo Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: same felt table as the counting trainer — header + site nav, segmented sub-views (Drill · Chart · Rules). Single committed felt look. */
+:root{
+  --felt:#123b2f; --felt-deep:#0b2a21; --rail:#1c4e3f;
+  --ivory:#f6f1e4; --ink:#1a1f1c; --red:#b3262e;
+  --text:#e9efe9; --muted:#9fb8ad; --line:rgba(216,180,90,.28); --brass:#d8b45a;
+  --good:#3fbf6f; --ok:#e8c547; --slow:#ec8a3a; --bad:#e2484f;
+  /* action colours for the chart (kept apart from the rating colours) */
+  --a-h:#24493d; --a-s:#cdd9d2; --a-d:#d8b45a; --a-p:#5b8fd6; --a-r:#a77bd1;
+  --f-display:"DM Serif Display",Georgia,serif;
+  --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(120% 80% at 50% 30%,var(--felt) 0%,var(--felt-deep) 100%) fixed,var(--felt-deep);color:var(--text);font-family:var(--f-body);font-size:14px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation}
+[hidden]{display:none!important}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px;min-height:100%}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-weight:400;font-size:1.7rem;margin:0;letter-spacing:.01em}
+h1 span{color:var(--brass)}
+h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
+h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600;margin:0}
+.sub{font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
+
+.nav{display:flex;gap:16px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.nav a{color:var(--muted);text-decoration:none;font-weight:500;font-size:.95rem;padding:6px 0 10px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.nav a[aria-current="page"]{color:var(--text);border-color:var(--brass)}
+.nav a:focus-visible{outline:2px solid var(--brass);outline-offset:3px;border-radius:2px}
+
+.view{display:flex;flex-direction:column;gap:14px;flex:1}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:rgba(0,0,0,.22);padding:4px;border-radius:12px}
+.tab{appearance:none;border:0;background:transparent;color:var(--muted);font:500 .9rem var(--f-body);padding:10px 8px;border-radius:9px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--rail);color:var(--text)}
+.tab:focus-visible,.btn:focus-visible,.seg button:focus-visible,.stage:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+.stage{flex:1;min-height:340px;border:1px solid var(--line);border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px 14px 18px;text-align:center;position:relative;user-select:none;transition:border-color .15s}
+.stage.right{border-color:var(--good)}
+.stage.wrong{border-color:var(--bad)}
+.hud{position:absolute;top:12px;left:16px;right:16px;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.seat{display:flex;flex-direction:column;align-items:center;gap:6px}
+.seat h3{font-size:.68rem}
+.cards{display:flex;gap:8px;justify-content:center}
+.card{width:76px;max-width:21vw;aspect-ratio:5/7;background:var(--ivory);color:var(--ink);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.35);position:relative;display:flex;align-items:center;justify-content:center;animation:deal .12s ease-out}
+.card.r{color:var(--red)}
+.card .c{position:absolute;font-family:var(--f-display);line-height:.95;font-size:1rem;text-align:center}
+.card .c i{display:block;font-style:normal;font-size:.8rem}
+.card .tl{top:5px;left:6px}.card .br{bottom:5px;right:6px;transform:rotate(180deg)}
+.card .mid{font-family:var(--f-display);font-size:2.1rem}
+@keyframes deal{from{transform:translateY(-10px) scale(.96);opacity:.4}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.card{animation:none}}
+
+.actions{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;width:100%;max-width:340px}
+.actions .btn{grid-column:span 2;padding:14px 4px}
+.actions .btn.wide{grid-column:span 3}
+.actions kbd{display:none}
+@media (hover:hover) and (pointer:fine){.actions kbd{display:inline;font:500 .7rem var(--f-mono);color:var(--muted);margin-left:5px}}
+.verdict{min-height:2.8em;margin:0;font-size:.92rem;line-height:1.4;color:var(--muted)}
+.verdict b{color:var(--bad);font-weight:600}
+
+.hint{color:var(--muted);font-size:.85rem;margin:0}
+.lead{font-family:var(--f-display);font-size:1.45rem;margin:0;text-wrap:balance}
+.copy{color:var(--muted);font-size:.92rem;line-height:1.5;max-width:36ch;margin:0}
+.btn{appearance:none;border:0;border-radius:12px;font:600 1rem var(--f-body);padding:14px 20px;cursor:pointer;background:var(--brass);color:#2a2008}
+.btn.ghost{background:rgba(255,255,255,.08);color:var(--text)}
+.btn.small{font-size:.85rem;padding:9px 14px;border-radius:10px}
+.btn.danger{background:rgba(226,72,79,.16);color:#ffb3b6}
+.btn:disabled{opacity:.3;cursor:default}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.row.left{justify-content:flex-start}
+.badge{width:92px;height:92px;border-radius:50%;box-shadow:0 0 0 6px rgba(255,255,255,.06),0 0 40px var(--glow,transparent)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:360px;margin:0}
+.stats div{background:rgba(0,0,0,.2);border-radius:10px;padding:10px 6px}
+.stats dt{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.stats dd{margin:4px 0 0;font-family:var(--f-mono);font-size:1.1rem;font-variant-numeric:tabular-nums}
+.missed{display:flex;flex-direction:column;gap:4px;font-family:var(--f-mono);font-size:.82rem;color:var(--muted);margin:0}
+.history{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.75rem;color:var(--muted);min-height:18px}
+.dot{width:12px;height:12px;border-radius:50%;flex:none;display:inline-block}
+.scale{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:.72rem;color:var(--muted)}
+.scale span{display:flex;align-items:center;gap:5px}
+.scale .dot{width:9px;height:9px}
+.rules-line{font-size:.8rem;color:var(--muted);margin:0;line-height:1.5}
+.rules-line a{color:var(--brass)}
+
+/* Chart */
+.chartwrap{overflow-x:auto;margin:0 -4px;padding:0 4px}
+.bs{border-collapse:separate;border-spacing:2px;font-family:var(--f-mono);font-size:.78rem;width:100%;min-width:330px;font-variant-numeric:tabular-nums;table-layout:fixed}
+.bs th{color:var(--muted);font-weight:500;padding:4px 0}
+.bs th.rowh,.bs thead th:first-child{width:4.6rem}
+.bs th.rowh{text-align:left;padding-right:6px;white-space:nowrap}
+.bs td{text-align:center;border-radius:4px;height:28px;position:relative;font-weight:500}
+.a-H{background:var(--a-h);color:var(--text)}
+.a-S{background:var(--a-s);color:var(--ink)}
+.a-D{background:var(--a-d);color:#2a2008}
+.a-P{background:var(--a-p);color:#0b1830}
+.a-R{background:var(--a-r);color:#1d0f2b}
+.bs td .m{position:absolute;top:-4px;right:-4px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;background:var(--bad);color:#fff;font:600 .58rem/14px var(--f-body)}
+.keys{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--muted)}
+.keys span{display:flex;align-items:center;gap:6px}
+.keys i{display:inline-flex;align-items:center;justify-content:center;width:20px;height:18px;border-radius:4px;font:500 .72rem var(--f-mono);font-style:normal}
+.note{color:var(--muted);font-size:.82rem;line-height:1.5;margin:0}
+
+/* Rules */
+.about{display:flex;flex-direction:column;gap:10px;color:var(--muted);font-size:.9rem;line-height:1.55;max-width:62ch}
+.about p{margin:0}.about b{color:var(--text);font-weight:500}
+.box{border:1px solid var(--line);border-radius:16px;padding:12px 14px 14px;margin:0;display:flex;flex-direction:column;gap:12px;min-width:0}
+.box legend{padding:0 6px;margin-left:-6px;font-weight:600;font-size:.95rem}
+.rule{display:flex;flex-direction:column;gap:6px}
+.rule .lbl{font-size:.9rem}
+.rule small{color:var(--muted);font-size:.76rem;line-height:1.4}
+.seg{display:inline-flex;background:rgba(0,0,0,.25);border-radius:10px;padding:3px;gap:3px;flex-wrap:wrap}
+.seg button{appearance:none;border:0;background:transparent;color:var(--muted);font:500 .85rem var(--f-body);padding:8px 12px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--rail);color:var(--text)}
+.seg button:disabled{opacity:.35;cursor:default}
+.lim-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px}
+.lim-row label,.lim-row span.t{font-size:.9rem}
+.lim-row.muted{color:var(--muted)}
+.field{display:flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:.82rem;color:var(--muted)}
+.field input{width:7ch;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:8px;color:var(--text);font:500 1rem var(--f-mono);padding:8px;text-align:right}
+.field input:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+.field input[aria-invalid="true"]{border-color:var(--bad)}
+.preset{font-size:.75rem;color:var(--muted)}
+.error{color:#ffb3b6;font-size:.88rem;margin:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Hi<span>·</span>Lo Trainer</h1>
+    <span class="sub">Basic strategy</span>
+  </header>
+  <nav class="nav" aria-label="Pages">
+    <a href="index.html#train">Train</a>
+    <a href="index.html#results">Results</a>
+    <a href="index.html#progress">Progress</a>
+    <a href="index.html#limits">Limits</a>
+    <a href="strategy.html" aria-current="page">Strategy</a>
+  </nav>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-drill" aria-selected="true">Drill</button>
+    <button class="tab" role="tab" id="tab-chart" aria-selected="false">Chart</button>
+    <button class="tab" role="tab" id="tab-rules" aria-selected="false">Rules</button>
+  </div>
+
+  <section class="view" id="view-drill">
+    <div class="stage" id="stage" tabindex="0"></div>
+    <div class="history" id="history"></div>
+  </section>
+
+  <section class="view" id="view-chart" hidden>
+    <p class="rules-line" id="chart-rules"></p>
+    <div class="keys" id="chart-keys"></div>
+    <div id="chart-body"></div>
+    <p class="note">Red badges count your wrong answers on that hand. Never take insurance or even money: without a count it always loses. That changes once you count, at a true count of +3 or higher.</p>
+  </section>
+
+  <section class="view" id="view-rules" hidden>
+    <div class="about">
+      <p>Basic strategy depends slightly on the table rules. Set them to match the casino you'll play in; the drill and the chart follow immediately. The defaults are the usual European shoe game.</p>
+      <p>The strategy assumes 4–8 decks and that you may double on any first two cards. It comes from the standard multi-deck charts, with the three European no-hole-card changes: hit 11 against a 10, hit 8,8 against a 10 or Ace, and hit A,A against an Ace.</p>
+    </div>
+    <fieldset class="box"><legend>Table rules</legend><div id="rules-body" style="display:flex;flex-direction:column;gap:14px"></div></fieldset>
+    <form class="box" id="limits-form" novalidate></form>
+    <div class="row left"><button class="btn danger small" type="button" id="reset-stats">Delete drill history</button></div>
+  </section>
+</div>
+
+<script>
+/* ---------- Strategy tables (4–8 decks, dealer stands on soft 17, double after split, late surrender) ----------
+   Columns: dealer 2 3 4 5 6 7 8 9 10 A.
+   H hit · S stand · D double · P split · R surrender (if not offered: hit).
+   Adjustments for other rules are applied in actionFor(). */
+const UPS=['2','3','4','5','6','7','8','9','10','A'];
+const BASE={
+  hard:{8:'HHHHHHHHHH',9:'HDDDDHHHHH',10:'DDDDDDDDHH',11:'DDDDDDDDDH',12:'HHSSSHHHHH',13:'SSSSSHHHHH',14:'SSSSSHHHHH',15:'SSSSSHHHRH',16:'SSSSSHHRRR',17:'SSSSSSSSSS'},
+  soft:{13:'HHHDDHHHHH',14:'HHHDDHHHHH',15:'HHDDDHHHHH',16:'HHDDDHHHHH',17:'HDDDDHHHHH',18:'SDDDDSSHHH',19:'SSSSSSSSSS',20:'SSSSSSSSSS'},
+  pair:{A:'PPPPPPPPPP',10:'SSSSSSSSSS',9:'PPPPPSPPSS',8:'PPPPPPPPPP',7:'PPPPPPHHHH',6:'PPPPPHHHHH',5:'DDDDDDDDHH',4:'HHHPPHHHHH',3:'PPPPPPHHHH',2:'PPPPPPHHHH'}
+};
+const ACTION={H:'Hit',S:'Stand',D:'Double',P:'Split',R:'Surrender'};
+const DEFAULT_RULES={h17:false,holeCard:false,das:true,surrender:false};
+const DEFAULT_LIMITS={fast:1.5,ok:3};
+let RULES={...DEFAULT_RULES},LIMITS={...DEFAULT_LIMITS};
+
+function actionFor(cat,row,ui,rules=RULES){
+  const up=UPS[ui];
+  let a=BASE[cat][row][ui];
+  let fallback=null; // what to do if surrender isn't offered
+  if(a==='R')fallback='H';
+  if(!rules.das&&cat==='pair'){
+    if((row==='2'||row==='3')&&(up==='2'||up==='3'))a='H';
+    if(row==='4'&&(up==='5'||up==='6'))a='H';
+    if(row==='6'&&up==='2')a='H';
+  }
+  if(rules.h17){
+    if(cat==='hard'&&row==='11'&&up==='A')a='D';
+    if(cat==='soft'&&row==='18'&&up==='2')a='D';
+    if(cat==='soft'&&row==='19'&&up==='6')a='D';
+    if(cat==='hard'&&row==='15'&&up==='A'){a='R';fallback='H'}
+    if(cat==='hard'&&row==='17'&&up==='A'){a='R';fallback='S'}
+    if(cat==='pair'&&row==='8'&&up==='A'){a='R';fallback='P'}
+  }
+  const surrender=rules.surrender&&rules.holeCard;
+  if(a==='R'&&!surrender)a=fallback;
+  if(!rules.holeCard){
+    if(cat==='hard'&&row==='11'&&(up==='10'||up==='A'))a='H';
+    if(cat==='pair'&&row==='8'&&(up==='10'||up==='A'))a='H';
+    if(cat==='pair'&&row==='A'&&up==='A')a='H';
+  }
+  return a;
+}
+const ROWS=[
+  ...Object.keys(BASE.hard).map(r=>['hard',r]),
+  ...Object.keys(BASE.soft).map(r=>['soft',r]),
+  ...Object.keys(BASE.pair).map(r=>['pair',r])
+];
+const cellId=(cat,row,ui)=>`${cat}-${row}-${UPS[ui]}`;
+function rowLabel(cat,row){
+  if(cat==='hard')return `Hard ${row}`;
+  if(cat==='soft')return `A,${row-11}`;
+  return row==='A'?'A,A':row==='10'?'10,10':`${row},${row}`;
+}
+function handName(cat,row){
+  if(cat==='hard')return `Hard ${row}`;
+  if(cat==='soft')return `Soft ${row} (A,${row-11})`;
+  return `Pair of ${row==='A'?'Aces':row==='10'?'tens':row+'s'}`;
+}
+
+/* ---------- Storage (own IndexedDB, falls back to memory) ---------- */
+let rounds=[],cells={};
+const Store={
+  db:null,
+  open(){return new Promise(res=>{
+    try{
+      const r=indexedDB.open('hilo-strategy',1);
+      r.onupgradeneeded=()=>{const db=r.result;
+        db.createObjectStore('rounds',{keyPath:'id',autoIncrement:true});
+        db.createObjectStore('cells',{keyPath:'id'});
+        db.createObjectStore('settings',{keyPath:'key'});
+      };
+      r.onsuccess=()=>{this.db=r.result;res()};
+      r.onerror=()=>res();r.onblocked=()=>res();
+    }catch(e){res()}
+  })},
+  req(store,mode,fn,fallback){return new Promise(res=>{
+    if(!this.db)return res(fallback);
+    try{const q=fn(this.db.transaction(store,mode).objectStore(store));q.onsuccess=()=>res(q.result);q.onerror=()=>res(fallback)}catch(e){res(fallback)}
+  })},
+  all(store){return this.req(store,'readonly',s=>s.getAll(),[]).then(r=>r||[])},
+  async add(store,rec){const id=await this.req(store,'readwrite',s=>s.add(rec),null);if(id!=null)rec.id=id;return rec},
+  put(store,rec){return this.req(store,'readwrite',s=>s.put(rec))},
+  clear(store){return this.req(store,'readwrite',s=>s.clear())},
+  async get(key){const r=await this.req('settings','readonly',s=>s.get(key),null);return r?r.value:null},
+  set(key,value){return this.req('settings','readwrite',s=>s.put({key,value}))},
+  del(key){return this.req('settings','readwrite',s=>s.delete(key))}
+};
+
+/* ---------- Ratings ---------- */
+const SCORE={
+  good:{c:'var(--good)',label:'Casino-ready'},
+  ok:{c:'var(--ok)',label:'Workable'},
+  slow:{c:'var(--slow)',label:'Too slow'},
+  bad:{c:'var(--bad)',label:'Misplayed'}
+};
+const HANDS=20;
+const num=v=>String(+(+v).toFixed(2));
+function scoreOf(allRight,perHand){return !allRight?'bad':perHand<=LIMITS.fast?'good':perHand<=LIMITS.ok?'ok':'slow'}
+
+/* ---------- Cards ---------- */
+const SUITS=[['♠',0],['♥',1],['♦',1],['♣',0]];
+const rnd=a=>a[Math.random()*a.length|0];
+function mk(rank){if(rank==='10')rank=rnd(['10','J','Q','K']);const [s,red]=rnd(SUITS);return{r:rank,s,red}}
+function cardHTML(c){return `<div class="card${c.red?' r':''}"><div class="c tl">${c.r}<i>${c.s}</i></div><div class="mid">${c.s}</div><div class="c br">${c.r}<i>${c.s}</i></div></div>`}
+function handCards(cat,row){
+  if(cat==='pair')return [mk(row),mk(row)];
+  if(cat==='soft')return Math.random()<.5?[mk('A'),mk(String(row-11))]:[mk(String(row-11)),mk('A')];
+  const t=+row,opts=[];
+  for(let a=2;a<=10;a++){const b=t-a;if(b>=2&&b<=10&&a!==b)opts.push([a,b])}
+  const [a,b]=rnd(opts);return [mk(String(a)),mk(String(b))];
+}
+
+/* ---------- Picking hands: every chart cell, weighted towards your mistakes ---------- */
+function rowIsUniform(cat,row){const f=actionFor(cat,row,0);return UPS.every((_,i)=>actionFor(cat,row,i)===f)}
+function pickCell(){
+  const list=[];let total=0;
+  for(const [cat,row] of ROWS){
+    const easy=rowIsUniform(cat,row);
+    for(let ui=0;ui<10;ui++){
+      const st=cells[cellId(cat,row,ui)];
+      let w=easy?0.3:1;
+      if(st&&st.due)w+=3*Math.min(st.due,3);
+      list.push([cat,row,ui,w]);total+=w;
+    }
+  }
+  let x=Math.random()*total;
+  for(const it of list){x-=it[3];if(x<=0)return it}
+  return list[list.length-1];
+}
+
+/* ---------- Drill ---------- */
+const stage=document.getElementById('stage');
+let D=null,tick=null;
+function intro(){
+  clearInterval(tick);D=null;stage.classList.remove('right','wrong');
+  stage.innerHTML=`<p class="lead">Play every hand by the book.</p>
+    <p class="copy">${HANDS} hands, each with the dealer's upcard. Tap what basic strategy says. Hands you get wrong come back more often.</p>
+    <p class="rules-line">${rulesLine()}. <a href="#rules" id="to-rules">Change rules</a></p>
+    <button class="btn" id="go">Start</button>
+    <div class="scale">${Object.values(SCORE).map(s=>`<span><i class="dot" style="background:${s.c}"></i>${s.label}</span>`).join('')}</div>`;
+  document.getElementById('go').onclick=startDrill;
+  document.getElementById('to-rules').onclick=e=>{e.preventDefault();go('rules')};
+}
+function startDrill(){
+  D={k:0,right:0,time:0,missed:[],busy:false};
+  deal();
+  tick=setInterval(()=>{const t=document.getElementById('t');if(t&&D)t.textContent=(D.time+(D.busy?0:(performance.now()-D.t1)/1000)).toFixed(1)+' s'},100);
+}
+function deal(){
+  const [cat,row,ui]=pickCell();
+  D.cur={cat,row,ui,cards:handCards(cat,row),up:mk(UPS[ui]),answer:actionFor(cat,row,ui)};
+  D.busy=false;
+  stage.classList.remove('right','wrong');
+  const pair=cat==='pair',sur=RULES.surrender&&RULES.holeCard;
+  stage.innerHTML=`<div class="hud"><span>${D.k+1} / ${HANDS}</span><span id="t">${D.time.toFixed(1)} s</span></div>
+    <div class="seat"><h3>Dealer</h3><div class="cards">${cardHTML(D.cur.up)}</div></div>
+    <div class="seat"><h3>You</h3><div class="cards">${D.cur.cards.map(cardHTML).join('')}</div></div>
+    <p class="verdict" id="verdict"></p>
+    <div class="actions">
+      <button class="btn ghost" data-a="H">Hit<kbd>H</kbd></button>
+      <button class="btn ghost" data-a="S">Stand<kbd>S</kbd></button>
+      <button class="btn ghost" data-a="D">Double<kbd>D</kbd></button>
+      <button class="btn ghost ${sur?'':'wide'}" data-a="P"${pair?'':' disabled'}>Split<kbd>P</kbd></button>
+      ${sur?'<button class="btn ghost" data-a="R">Surrender<kbd>R</kbd></button>':''}
+      ${sur?'':'<span style="grid-column:span 3"></span>'}
+    </div>`;
+  stage.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>answer(b.dataset.a));
+  D.t1=performance.now();
+}
+async function answer(a){
+  if(!D||D.busy)return;
+  const c=D.cur;
+  if(a==='P'&&c.cat!=='pair')return;
+  if(a==='R'&&!(RULES.surrender&&RULES.holeCard))return;
+  D.busy=true;
+  D.time+=(performance.now()-D.t1)/1000;
+  const ok=a===c.answer;
+  const id=cellId(c.cat,c.row,c.ui);
+  const st=cells[id]||{id,seen:0,wrong:0,due:0};
+  st.seen++;if(ok){st.due=Math.max(0,st.due-1)}else{st.wrong++;st.due+=2}
+  cells[id]=st;Store.put('cells',st);
+  if(ok)D.right++;else D.missed.push({...c,you:a});
+  stage.classList.add(ok?'right':'wrong');
+  if(!ok)document.getElementById('verdict').innerHTML=`<b>${ACTION[c.answer]}</b> · ${handName(c.cat,c.row)} vs ${UPS[c.ui]}`;
+  D.k++;
+  setTimeout(()=>{if(!D)return;D.k>=HANDS?finish():deal()},ok?180:1500);
+}
+async function finish(){
+  clearInterval(tick);
+  stage.classList.remove('right','wrong');
+  const per=D.time/HANDS,all=D.right===HANDS;
+  const key=scoreOf(all,per),sc=SCORE[key];
+  const miss=D.missed.slice(0,5).map(m=>`<span>${rowLabel(m.cat,m.row)} vs ${UPS[m.ui]} → ${ACTION[m.answer]} (you: ${ACTION[m.you]})</span>`).join('');
+  stage.innerHTML=`<div class="badge" style="background:${sc.c};--glow:${sc.c}"></div>
+    <p class="lead">${sc.label}</p>
+    <dl class="stats">
+      <div><dt>Time</dt><dd>${D.time.toFixed(1)} s</dd></div>
+      <div><dt>Correct</dt><dd>${D.right}/${HANDS}</dd></div>
+      <div><dt>Per hand</dt><dd>${per.toFixed(2)} s</dd></div>
+    </dl>
+    ${miss?`<p class="missed">${miss}</p>`:''}
+    <p class="hint">Casino-ready: all ${HANDS} right at ${num(LIMITS.fast)} s per hand or faster.</p>
+    <div class="row"><button class="btn" id="again">Again</button><button class="btn ghost" id="see-chart">See chart</button></div>`;
+  document.getElementById('again').onclick=startDrill;
+  document.getElementById('see-chart').onclick=()=>go('chart');
+  const rec={ts:Date.now(),hands:HANDS,right:D.right,time:+D.time.toFixed(2),score:key,rules:{...RULES}};
+  D=null;
+  rounds.push(await Store.add('rounds',rec));
+  renderHist();
+}
+function renderHist(){
+  const h=rounds.slice(-20);
+  document.getElementById('history').innerHTML=h.length?'Recent rounds:'+h.map(r=>`<i class="dot" style="background:${SCORE[r.score].c}" title="${SCORE[r.score].label}"></i>`).join(''):'';
+}
+document.addEventListener('keydown',e=>{
+  if(!D||D.busy||document.getElementById('view-drill').hidden||e.metaKey||e.ctrlKey||e.altKey)return;
+  const k=e.key.toUpperCase();
+  if('HSDPR'.includes(k)&&k.length===1){e.preventDefault();answer(k)}
+});
+
+/* ---------- Chart ---------- */
+function rulesLine(){
+  return ['4–8 decks',RULES.h17?'dealer hits soft 17':'dealer stands on soft 17',RULES.holeCard?'hole card (dealer peeks)':'no hole card',RULES.das?'double after split':'no double after split',RULES.surrender&&RULES.holeCard?'surrender':'no surrender'].join(' · ').replace(/^./,c=>c.toUpperCase());
+}
+function renderChart(){
+  document.getElementById('chart-rules').textContent=rulesLine();
+  const used=new Set(ROWS.flatMap(([c,r])=>UPS.map((_,i)=>actionFor(c,r,i))));
+  document.getElementById('chart-keys').innerHTML=['H','S','D','P','R'].filter(k=>used.has(k)).map(k=>`<span><i class="a-${k}">${k}</i>${ACTION[k]}</span>`).join('');
+  const table=(title,cat)=>`<h3>${title}</h3><div class="chartwrap"><table class="bs"><thead><tr><th></th>${UPS.map(u=>`<th>${u}</th>`).join('')}</tr></thead><tbody>${
+    ROWS.filter(([c])=>c===cat).map(([c,r])=>`<tr><th class="rowh" scope="row">${rowLabel(c,r)}</th>${UPS.map((_,i)=>{
+      const a=actionFor(c,r,i),st=cells[cellId(c,r,i)];
+      return `<td class="a-${a}" title="${rowLabel(c,r)} vs ${UPS[i]}: ${ACTION[a]}${st?` · ${st.wrong} wrong of ${st.seen}`:''}">${a}${st&&st.wrong?`<span class="m">${st.wrong}</span>`:''}</td>`}).join('')}</tr>`).join('')
+  }</tbody></table></div>`;
+  document.getElementById('chart-body').innerHTML=`<div style="display:flex;flex-direction:column;gap:12px">${table('Hard totals','hard')}${table('Soft totals','soft')}${table('Pairs','pair')}</div>`;
+}
+
+/* ---------- Rules & limits ---------- */
+const RULE_DEFS=[
+  ['holeCard','Hole card',[[false,'No (Europe)'],[true,'Yes (US)']],'Without a hole card the dealer takes a second card only after you play, and a dealer blackjack also takes your doubles and splits.'],
+  ['h17','Dealer on soft 17',[[false,'Stands'],[true,'Hits']],'Printed on the felt: "Dealer must stand on all 17s" or "Dealer hits soft 17".'],
+  ['das','Double after split',[[true,'Allowed'],[false,'Not allowed']],''],
+  ['surrender','Late surrender',[[false,'Not offered'],[true,'Offered']],'Give up half your bet before playing. Only shown with a hole card; European tables rarely offer it.']
+];
+function renderRules(){
+  document.getElementById('rules-body').innerHTML=RULE_DEFS.map(([k,label,opts,help])=>{
+    const dis=k==='surrender'&&!RULES.holeCard;
+    return `<div class="rule"><span class="lbl" id="lbl-${k}">${label}</span>
+      <div class="seg" role="group" aria-labelledby="lbl-${k}">${opts.map(([v,t])=>`<button type="button" data-k="${k}" data-v="${v}" aria-pressed="${RULES[k]===v}"${dis?' disabled':''}>${t}</button>`).join('')}</div>
+      ${help?`<small>${help}</small>`:''}</div>`}).join('');
+  document.querySelectorAll('#rules-body [data-k]').forEach(b=>b.onclick=async()=>{
+    RULES[b.dataset.k]=b.dataset.v==='true';
+    await Store.set('rules',RULES);
+    renderRules();
+  });
+  renderLimits();
+}
+let resetTimer=null,statsTimer=null;
+function renderLimits(status){
+  const f=document.getElementById('limits-form');
+  const custom=LIMITS.fast!==DEFAULT_LIMITS.fast||LIMITS.ok!==DEFAULT_LIMITS.ok;
+  f.innerHTML=`<legend>Speed limits${custom?' · custom':''}</legend>
+    <p class="note">Any wrong play makes the round <b style="color:var(--text)">misplayed</b>. The preset of 1.5 s per hand, including your tap, is about what's left over at a real table when you also have to keep the count. Decisions should be automatic.</p>
+    <div class="lim-row"><i class="dot" style="background:var(--good)"></i><label for="lim-fast">Casino-ready up to</label><span class="field"><input id="lim-fast" inputmode="decimal" autocomplete="off" value="${num(LIMITS.fast)}"> s/hand</span></div>
+    <div class="lim-row"><i class="dot" style="background:var(--ok)"></i><label for="lim-ok">Workable up to</label><span class="field"><input id="lim-ok" inputmode="decimal" autocomplete="off" value="${num(LIMITS.ok)}"> s/hand</span></div>
+    <div class="lim-row muted"><i class="dot" style="background:var(--slow)"></i><span class="t">Too slow above that</span><span></span></div>
+    <span class="preset">Preset: ${num(DEFAULT_LIMITS.fast)} / ${num(DEFAULT_LIMITS.ok)} s per hand</span>
+    <p class="error" id="lim-err" role="alert"></p>
+    <div class="row left"><button class="btn" type="button" id="lim-save">Save limits</button><button class="btn ghost" type="button" id="lim-reset">Reset to presets</button></div>
+    <p class="hint" role="status">${status||''}</p>`;
+  const save=async()=>{
+    const fi=document.getElementById('lim-fast'),oi=document.getElementById('lim-ok');
+    const fv=parseFloat(fi.value.replace(',','.')),ov=parseFloat(oi.value.replace(',','.'));
+    fi.removeAttribute('aria-invalid');oi.removeAttribute('aria-invalid');
+    let err='';
+    if(!(fv>0&&fv<=20)){fi.setAttribute('aria-invalid','true');err='Enter a casino-ready limit between 0 and 20 seconds.'}
+    else if(!(ov>0&&ov<=30)){oi.setAttribute('aria-invalid','true');err='Enter a workable limit between 0 and 30 seconds.'}
+    else if(ov<=fv){oi.setAttribute('aria-invalid','true');err='The workable limit must be higher than the casino-ready limit.'}
+    if(err){document.getElementById('lim-err').textContent=err;return}
+    LIMITS={fast:+fv.toFixed(2),ok:+ov.toFixed(2)};await Store.set('limits',LIMITS);
+    renderLimits('Saved. New rounds use these limits.');
+  };
+  document.getElementById('lim-save').onclick=save;
+  f.onsubmit=e=>{e.preventDefault();save()};
+  f.onkeydown=e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();save()}};
+  const rb=document.getElementById('lim-reset');
+  rb.onclick=async()=>{
+    if(rb.dataset.armed){clearTimeout(resetTimer);LIMITS={...DEFAULT_LIMITS};await Store.del('limits');renderLimits('Presets restored.');return}
+    rb.dataset.armed='1';rb.textContent='Tap again to reset';
+    resetTimer=setTimeout(()=>{delete rb.dataset.armed;rb.textContent='Reset to presets'},3500);
+  };
+}
+const statsBtn=document.getElementById('reset-stats');
+statsBtn.onclick=async()=>{
+  if(statsBtn.dataset.armed){clearTimeout(statsTimer);delete statsBtn.dataset.armed;await Store.clear('rounds');await Store.clear('cells');rounds=[];cells={};renderHist();statsBtn.textContent='Drill history deleted';setTimeout(()=>statsBtn.textContent='Delete drill history',2500);return}
+  statsBtn.dataset.armed='1';statsBtn.textContent='Tap again to delete rounds and mistake counts';
+  statsTimer=setTimeout(()=>{delete statsBtn.dataset.armed;statsBtn.textContent='Delete drill history'},3500);
+};
+
+/* ---------- Routing (sub-views) ---------- */
+const VIEWS=['drill','chart','rules'];
+let current=null;
+function hashView(){try{const h=location.hash.slice(1);return VIEWS.includes(h)?h:null}catch(e){return null}}
+function go(v){try{history.replaceState(null,'','#'+v)}catch(e){}show_(v)}
+function show_(v){
+  const leaving=current==='drill'&&v!=='drill';
+  current=v;
+  VIEWS.forEach(k=>{document.getElementById('view-'+k).hidden=k!==v;document.getElementById('tab-'+k).setAttribute('aria-selected',k===v)});
+  if(v==='drill'&&(!D||leaving))intro();
+  if(leaving){clearInterval(tick);D=null}
+  if(v==='chart')renderChart();
+  if(v==='rules')renderRules();
+}
+VIEWS.forEach(k=>document.getElementById('tab-'+k).onclick=()=>go(k));
+window.addEventListener('hashchange',()=>show_(hashView()||'drill'));
+
+(async()=>{
+  show_(hashView()||'drill');
+  await Store.open();
+  const r=await Store.get('rules');if(r&&typeof r==='object')RULES={...DEFAULT_RULES,...r};
+  const l=await Store.get('limits');if(l&&l.fast>0&&l.ok>l.fast)LIMITS=l;
+  rounds=(await Store.all('rounds')).sort((a,b)=>a.id-b.id);
+  (await Store.all('cells')).forEach(c=>cells[c.id]=c);
+  renderHist();
+  if(!D)show_(current);
+})();
+</script>
+</body>
+</html>
