@@ -46,9 +46,9 @@ Rounds and limits are saved in your browser (IndexedDB), so they survive closing
 
 - **Drill** – 20 hands with the dealer's upcard. Tap Hit, Stand, Double, Split or Surrender (keys H, S, D, P, R). Hands you get wrong come back more often. Rated Casino-ready (≤ 1.5 s per hand), Workable (≤ 3 s), Too slow, or Misplayed.
 - **Chart** – the full strategy for the selected table rules, with your mistakes per hand. Tap any hand for an explanation of the play, notes on how other table rules would change it, and the expected result of every option (per bet and per €10). After a wrong answer in the drill, **Why?** opens the same explanation.
+- **Rules** – hole card yes/no, dealer stands/hits soft 17, double after split, late surrender, plus the speed limits.
 
 The expected results are calculated in the page with an infinite-deck model for the selected rules. They agree with the chart on all but two hands (A,2 vs 5 and A,4 vs 4, by less than 0.01), where the chart, built for real 4–8 deck shoes, is right.
-- **Rules** – hole card yes/no, dealer stands/hits soft 17, double after split, late surrender, plus the speed limits.
 
 The strategy is the standard 4–8 deck chart (Wizard of Odds) with the usual adjustments for H17, no double after split and no surrender, and the European no-hole-card changes: hit 11 vs 10, hit 8,8 vs 10/A, hit A,A vs A. Default rules: no hole card, dealer stands on soft 17, double after split, no surrender.
 
