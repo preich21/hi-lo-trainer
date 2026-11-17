@@ -109,7 +109,7 @@ h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.09em;color:var(--mut
 .a-D{background:var(--a-d);color:#2a2008}
 .a-P{background:var(--a-p);color:#0b1830}
 .a-R{background:var(--a-r);color:#1d0f2b}
-.bs td .m{position:absolute;top:-4px;right:-4px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;background:var(--bad);color:#fff;font:600 .58rem/14px var(--f-body)}
+.bs td .m{pointer-events:none;position:absolute;top:-4px;right:-4px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;background:var(--bad);color:#fff;font:600 .58rem/14px var(--f-body)}
 .keys{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--muted)}
 .keys span{display:flex;align-items:center;gap:6px}
 .keys i{display:inline-flex;align-items:center;justify-content:center;width:20px;height:18px;border-radius:4px;font:500 .72rem var(--f-mono);font-style:normal}
@@ -136,6 +136,53 @@ h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.09em;color:var(--mut
 .field input[aria-invalid="true"]{border-color:var(--bad)}
 .preset{font-size:.75rem;color:var(--muted)}
 .error{color:#ffb3b6;font-size:.88rem;margin:0}
+
+/* Explanation sheet */
+.bs td.cell{padding:0}
+.bs td.cell button{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:100%;height:28px;border-radius:4px;cursor:pointer}
+.bs td.cell button:focus-visible{outline:2px solid var(--text);outline-offset:1px}
+@media (hover:hover){.bs td.cell:hover{filter:brightness(1.12)}}
+.scrim{position:fixed;inset:0;background:rgba(3,14,10,.6);z-index:20}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-height:86vh;overflow-y:auto;background:var(--felt);border-top:1px solid var(--line);border-radius:20px 20px 0 0;box-shadow:0 -18px 40px rgba(0,0,0,.45);
+  padding:18px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:rise .18s ease-out}
+@keyframes rise{from{transform:translateY(24px);opacity:.5}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sheet-in{max-width:540px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.sheet-head h2{font-size:1.3rem;text-wrap:balance}
+.sheet-head .play{display:inline-block;margin-top:6px;font:600 .8rem var(--f-mono);padding:3px 9px;border-radius:6px}
+.close{appearance:none;border:0;background:rgba(255,255,255,.08);color:var(--text);width:36px;height:36px;border-radius:50%;font-size:1.2rem;cursor:pointer;flex:none}
+.close:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.why{display:flex;flex-direction:column;gap:8px;font-size:.93rem;line-height:1.55;margin:0}
+.why p{margin:0;max-width:62ch}
+.callout{border-left:3px solid var(--brass);padding:2px 0 2px 10px;color:var(--text)}
+.rnote{border-left:3px solid var(--a-p);padding:2px 0 2px 10px;color:var(--muted);font-size:.86rem}
+.evt{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.evt th{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;text-align:right;padding:4px 0 6px}
+.evt th:first-child{text-align:left}
+.evt td{padding:8px 0;border-top:1px solid rgba(216,180,90,.14);font-family:var(--f-mono);text-align:right}
+.evt td:first-child{font-family:var(--f-body);text-align:left}
+.evt tr.best td{color:var(--text);font-weight:600}
+.evt tr:not(.best) td{color:var(--muted)}
+.chip-s{font:600 .62rem var(--f-body);text-transform:uppercase;letter-spacing:.07em;padding:2px 6px;border-radius:999px;margin-left:6px;vertical-align:1px}
+.chip-s.chart{background:var(--brass);color:#2a2008}
+.chip-s.top{background:rgba(255,255,255,.12);color:var(--text)}
+.small{font-size:.8rem;color:var(--muted);line-height:1.5;margin:0}
+.linkish{all:unset;cursor:pointer;color:var(--text);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.linkish:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:2px}
+.vrow{display:flex;gap:8px;justify-content:center;margin-top:8px}
+html.locked{overflow:hidden}
+.stage.waiting{cursor:pointer}
+.stage.waiting .actions{pointer-events:none;opacity:.35}
+.tap-hint{display:block;margin-top:6px;font-size:.78rem;color:var(--muted)}
+.scrim{touch-action:none}
+.sheet{overscroll-behavior:contain}
+.ev-head{display:flex;align-items:center;gap:8px;position:relative;margin-top:4px}
+.info{appearance:none;border:1px solid var(--line);background:transparent;color:var(--muted);width:22px;height:22px;border-radius:50%;font:600 .78rem/1 var(--f-mono);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0}
+.info[aria-expanded="true"]{background:var(--brass);color:#2a2008;border-color:var(--brass)}
+.info:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.tip{position:absolute;top:calc(100% + 8px);left:0;right:0;max-width:340px;z-index:2;background:var(--felt-deep);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.84rem;line-height:1.5;color:var(--text);box-shadow:0 10px 24px rgba(0,0,0,.4)}
+.tip p{margin:0}.tip p+p{margin-top:6px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -167,7 +214,7 @@ h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.09em;color:var(--mut
     <p class="rules-line" id="chart-rules"></p>
     <div class="keys" id="chart-keys"></div>
     <div id="chart-body"></div>
-    <p class="note">Red badges count your wrong answers on that hand. Never take insurance or even money: without a count it always loses. That changes once you count, at a true count of +3 or higher.</p>
+    <p class="note">Tap any hand to see why it's played that way and what each option is worth. Red badges count your wrong answers on that hand. Never take insurance or even money: without a count it always loses. That changes once you count, at a true count of +3 or higher.</p>
   </section>
 
   <section class="view" id="view-rules" hidden>
@@ -179,6 +226,11 @@ h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.09em;color:var(--mut
     <form class="box" id="limits-form" novalidate></form>
     <div class="row left"><button class="btn danger small" type="button" id="reset-stats">Delete drill history</button></div>
   </section>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+  <div class="sheet-in" id="sheet-body"></div>
 </div>
 
 <script>
@@ -240,6 +292,219 @@ function handName(cat,row){
   if(cat==='soft')return `Soft ${row} (A,${row-11})`;
   return `Pair of ${row==='A'?'Aces':row==='10'?'tens':row+'s'}`;
 }
+
+/* ---------- Expected results (infinite-deck model) ----------
+   Cards: 1 = Ace … 10 = any ten-value card. Each rank 1/13, tens 4/13.
+   With a hole card the dealer has already checked for blackjack, so results are conditional on no dealer blackjack.
+   Without a hole card a dealer blackjack takes the whole bet, including doubles and splits. */
+const PR=c=>c===10?4/13:1/13;
+function addCard(t,s,c){if(c===1){if(t+11<=21){t+=11;s=true}else t+=1}else t+=c;if(t>21&&s){t-=10;s=false}return [t,s]}
+const MODEL_CACHE=new Map();
+function model(rules=RULES){
+  const key=`${rules.h17}|${rules.holeCard}`;
+  if(MODEL_CACHE.has(key))return MODEL_CACHE.get(key);
+  const memo=new Map();
+  const dealerFrom=(t,s)=>{ // → probabilities of ending on [17,18,19,20,21,bust]
+    const k=t*2+(s?1:0);
+    if(memo.has(k))return memo.get(k);
+    let out=[0,0,0,0,0,0];
+    if(t>21)out[5]=1;
+    else if(t>=18||(t===17&&!(s&&rules.h17)))out[t-17]=1;
+    else for(let c=1;c<=10;c++){const [nt,ns]=addCard(t,s,c);const d=dealerFrom(nt,ns);for(let i=0;i<6;i++)out[i]+=PR(c)*d[i]}
+    memo.set(k,out);return out;
+  };
+  const up={};
+  for(let u=1;u<=10;u++){
+    const [t0,s0]=addCard(0,false,u);
+    let dist=[0,0,0,0,0,0],tot=0,pBJ=0;
+    for(let c=1;c<=10;c++){
+      if((u===1&&c===10)||(u===10&&c===1)){pBJ+=PR(c);continue}
+      const [t,s]=addCard(t0,s0,c),d=dealerFrom(t,s);
+      for(let i=0;i<6;i++)dist[i]+=PR(c)*d[i];
+      tot+=PR(c);
+    }
+    up[u]={dist:dist.map(x=>x/tot),pBJ};
+  }
+  const m={up};MODEL_CACHE.set(key,m);return m;
+}
+const upNum=ui=>ui===9?1:ui+2;
+function dealerBust(ui,rules=RULES){const {dist,pBJ}=model(rules).up[upNum(ui)];return rules.holeCard?dist[5]:(1-pBJ)*dist[5]}
+function evsFor(cat,row,ui,rules=RULES){
+  const {dist,pBJ}=model(rules).up[upNum(ui)];
+  const standE=t=>{if(t>21)return -1;let e=dist[5];for(let d=17;d<=21;d++)e+=(t>d?1:t<d?-1:0)*dist[d-17];return e};
+  const memo=new Map();
+  const best=(t,s)=>{
+    if(t>21)return -1;
+    const k=t*2+(s?1:0);if(memo.has(k))return memo.get(k);
+    const v=Math.max(standE(t),hitE(t,s));memo.set(k,v);return v;
+  };
+  const hitE=(t,s)=>{let e=0;for(let c=1;c<=10;c++){const [nt,ns]=addCard(t,s,c);e+=PR(c)*(nt>21?-1:best(nt,ns))}return e};
+  const dblE=(t,s)=>{let e=0;for(let c=1;c<=10;c++){const [nt]=addCard(t,s,c);e+=PR(c)*standE(nt)}return 2*e};
+  let t,s,x=null;
+  if(cat==='hard'){t=+row;s=false}
+  else if(cat==='soft'){t=+row;s=true}
+  else{x=row==='A'?1:+row;[t,s]=addCard(...addCard(0,false,x),x)}
+  const adj=(e,mult)=>rules.holeCard?e:(1-pBJ)*e-pBJ*mult;
+  const out={S:adj(standE(t),1),H:adj(hitE(t,s),1),D:adj(dblE(t,s),2)};
+  if(x!==null){
+    let h=0;
+    for(let c=1;c<=10;c++){
+      const [nt,ns]=addCard(...addCard(0,false,x),c);
+      h+=PR(c)*(x===1?standE(nt):Math.max(best(nt,ns),rules.das?dblE(nt,ns):-Infinity));
+    }
+    out.P=adj(2*h,2);
+  }
+  if(rules.surrender&&rules.holeCard)out.R=-0.5;
+  return out;
+}
+
+/* ---------- Explanations ---------- */
+const upName=ui=>UPS[ui]==='A'?'Ace':UPS[ui];
+const art=ui=>UPS[ui]==='A'?'an Ace':UPS[ui]==='8'?'an 8':'a '+UPS[ui];
+const pct=x=>Math.round(x*100);
+function bustLine(ui){return `A dealer ${upName(ui)} busts about ${pct(dealerBust(ui))}% of the time${RULES.holeCard?' once they have checked for blackjack':''}.`}
+const FREE=`A soft hand can't bust with one card: if you go over 21, the Ace simply counts as 1.`;
+function explain(cat,row,ui,a){
+  const u=ui+2, up=upName(ui), B=bustLine(ui);
+  const surr=t=>`${t} against a dealer ${up} loses more than half your bet on average, whether you hit or stand. Surrendering costs exactly half, so it's the cheaper option.`;
+  if(cat==='hard'){
+    const t=+row;
+    if(a==='R')return [surr(t)];
+    if(t<=8)return [`With ${t} you can't bust with one more card, and the total is too low to be worth doubling. Take a card.`];
+    if(t===9){
+      if(a==='D')return [`9 becomes 19 with a ten, the most likely next card. Against a weak dealer card like ${up} that makes you the favourite, so put more money on the table and double.`];
+      if(u===2)return [`Against 3–6 you double 9, because 19 is likely and the dealer is weak.`,`Exception: a dealer 2 busts less often than 3–6, so doubling 9 doesn't quite pay. Just hit.`];
+      return [`Against a dealer ${up} the dealer usually finishes on 17–21. 9 isn't strong enough to double into that, so just hit.`];
+    }
+    if(t===10){
+      if(a==='D')return [`10 becomes 20 with a ten, the most likely next card. That beats what a dealer ${up} usually ends with, so double.`];
+      return [`A dealer ${up} starts at least as strong as your 10, so doubling doesn't pay. Hit.`];
+    }
+    if(t===11){
+      if(a==='D')return [`11 is the best total to double: every ten makes 21, and one card can't bust you.`];
+      if(u===11&&!RULES.h17)return [`Normally you double 11. An Ace is the dealer's strongest card, and when the dealer stands on soft 17, doubling comes out slightly worse than hitting.${RULES.holeCard?'':' Without a hole card it is even clearer, because a dealer blackjack would also take your doubled bet.'}`];
+      return [`Normally you double 11. Without a hole card the dealer hasn't checked for blackjack, and a dealer blackjack would also take your doubled bet. Against ${art(ui)} that risk tips it to hitting.`];
+    }
+    if(t===12){
+      if(a==='S')return [`12 is a stiff hand: hitting busts on any ten, about 31% of cards. ${B} Let the dealer take the risk and stand.`];
+      if(u<=3)return [`12 is a stiff hand, and against the dealer's 4–6 you stand.`,`Exception: a dealer 2 or 3 busts less often, while 12 only busts on a ten. Hitting is slightly better here.`];
+    }
+    if(t<=16){
+      if(a==='S')return [`${t} is a stiff hand: one more card busts you often. ${B} The dealer has to keep hitting until 17, so stand and let them bust.`];
+      return [`A dealer ${up} busts only about ${pct(dealerBust(ui))}% of the time and usually finishes on 17–21. Standing on ${t} only wins when the dealer busts, so you have to take the risk and hit.`];
+    }
+    return [`Hitting 17 busts on any 5 or higher, about 69% of cards. Always stand on hard 17.`];
+  }
+  if(cat==='soft'){
+    const t=+row,x=t-11,name=`Soft ${t} (A,${x})`;
+    if(t<=17){
+      if(a==='D')return [`${name} is weak on its own, but one more card can't hurt it. ${FREE} ${B} Against that, it pays to double and take the card at twice the bet.`];
+      return [`${name} is weak on its own${t===17?' and only wins when the dealer busts':''}. ${FREE} So improve it by hitting.${t===17?' Never stand on soft 17.':''}`];
+    }
+    if(t===18){
+      if(a==='D')return [`${B} Against that, doubling soft 18 earns more than standing, even though the extra card can leave you with a weaker total.`];
+      if(a==='H')return [`A dealer ${up} often reaches 19 or 20, so soft 18 loses more than it wins. ${FREE} Hit and try to improve.`];
+      if(u===2)return [`Soft 18 beats a dealer who ends on 17 and ties one who ends on 18.`,`Against 3–6 you double soft 18. A dealer 2 busts less often, so here standing is better.`];
+      return [`Soft 18 beats a dealer who ends on 17 and ties one who ends on 18. With ${art(ui)} showing, those are the dealer's most likely results, so stand.`];
+    }
+    if(a==='D')return [`Soft 19 is a strong hand, but when the dealer hits soft 17, a dealer 6 busts often enough that doubling earns slightly more than standing.`];
+    return [`${name} is a strong hand. Stand.`];
+  }
+  const r=row;
+  if(a==='R')return [`Normally you always split 8s. But against an Ace when the dealer hits soft 17, 16 is so bad that surrendering loses less than splitting.`];
+  if(r==='A'){
+    if(a==='P')return [`Two Aces count as soft 12, a weak hand. Split them, and each Ace becomes 21 with a ten or a solid hand with most other cards. You usually get only one card per Ace after splitting.`];
+    return [`Normally you always split Aces. Without a hole card a dealer blackjack would take both split bets, and against an Ace that risk is high enough that hitting soft 12 is better.`];
+  }
+  if(r==='10')return [`20 is one of the best hands in the game. Splitting tens trades it for two hands that start with 10. Always stand.`];
+  if(r==='9'){
+    if(a==='P')return [`18 is good but not great. Against a dealer ${up}, two hands starting with 9 earn more than one 18.`];
+    if(u===7)return [`Normally you split 9s against the dealer's small and medium cards.`,`Exception: against a 7 the dealer's most likely result is 17, which your 18 already beats. Stand.`];
+    return [`Against a dealer ${up} both 18 and two hands starting with 9 lose more than they win. Standing on 18 loses the least.`];
+  }
+  if(r==='8'){
+    if(a==='P')return [`16 is the worst hand in blackjack. Two hands starting with 8 are much better, so split 8s.`];
+    return [`Normally you always split 8s. Without a hole card a dealer blackjack would take both split bets, so against ${art(ui)} you play 16 and hit instead.`];
+  }
+  if(r==='7'){
+    if(a==='P')return [`14 is a stiff hand. Against a dealer ${up}, two hands starting with 7 do better than playing 14.`];
+    return [`Against a dealer ${up}, two 7s are too weak to split. Play the hand as a stiff 14 and hit.`];
+  }
+  if(r==='6'){
+    if(a==='P')return [`12 is a stiff hand. Against a weak dealer card like ${up}, two hands starting with 6 do better.`];
+    return [`Against a dealer ${up}, two 6s don't make two good hands. Play 12 and hit.`];
+  }
+  if(r==='5')return [`Never split 5s: two hands starting with 5 are weak, but 10 is a great total. Play it as a hard 10${a==='D'?' and double':' and hit'} against a dealer ${up}.`];
+  if(r==='4'){
+    if(a==='P')return [`Against a dealer 5 or 6, which bust often, splitting 4s pays because you can double when either hand draws a good card.`];
+    return [`Two 4s make a hard 8: one card can't bust you. Hit.`];
+  }
+  if(a==='P')return [`${2*+r} is a weak start. Against a dealer ${up}, two hands do better, especially when you can double after splitting.`];
+  return [`Against a dealer ${up}, two small hands are too weak to split. Hit.`];
+}
+const RULE_FLIP={
+  holeCard:{label:v=>v?'At a table with a hole card':'At a table without a hole card',why:'Without a hole card the dealer only checks for blackjack at the end, and a dealer blackjack then also takes the extra money you put in by doubling or splitting.'},
+  h17:{label:v=>v?'If the dealer hits soft 17':'If the dealer stands on soft 17',why:'A dealer who hits soft 17 busts a little more often but also improves some 17s, which shifts these close decisions.'},
+  das:{label:v=>v?'If doubling after a split is allowed':'If doubling after a split is not allowed',why:'Being able to double after splitting makes splitting small pairs worth it against weak dealer cards.'},
+  surrender:{label:v=>v?'If surrender is offered':'Without surrender',why:'Surrender only pays when a hand loses more than half the bet on average.'}
+};
+function ruleNotes(cat,row,ui,a){
+  const notes=[];
+  for(const k of Object.keys(RULE_FLIP)){
+    if(k==='surrender'&&!RULES.holeCard)continue;
+    const alt={...RULES,[k]:!RULES[k]};
+    const b=actionFor(cat,row,ui,alt);
+    if(b!==a)notes.push(`${RULE_FLIP[k].label(alt[k])}: ${ACTION[b].toLowerCase()} instead. ${RULE_FLIP[k].why}`);
+  }
+  return notes;
+}
+
+/* ---------- Explanation sheet ---------- */
+const sheet=document.getElementById('sheet'),scrim=document.getElementById('scrim');
+let sheetReturn=null,sheetOnClose=null;
+const fmtEV=e=>(e>=0?'+':'−')+Math.abs(e).toFixed(3);
+const fmtEur=e=>(e>=0?'+':'−')+'€'+Math.abs(e*10).toFixed(2);
+function openSheet(cat,row,ui,onClose){
+  const a=actionFor(cat,row,ui),ev=evsFor(cat,row,ui);
+  const rows=Object.entries(ev).sort((x,y)=>y[1]-x[1]);
+  const top=rows[0][0],gap=rows[0][1]-rows[1][1];
+  const paras=explain(cat,row,ui,a);
+  const notes=ruleNotes(cat,row,ui,a);
+  const st=cells[cellId(cat,row,ui)];
+  let modelNote='';
+  if(top!==a)modelNote=`<p class="small">In this simplified model, ${ACTION[top].toLowerCase()} comes out ahead by ${(ev[top]-ev[a]).toFixed(3)}. The chart is worked out for a real 4–8 deck shoe, where the cards already dealt shift the odds very slightly. Follow the chart.</p>`;
+  else if(gap<0.02)modelNote=`<p class="small">Close call: the two best options are less than €0.20 apart per €10 bet.</p>`;
+  document.getElementById('sheet-body').innerHTML=`
+    <div class="sheet-head"><div><h2 id="sheet-title">${handName(cat,row)} vs dealer ${upName(ui)}</h2><span class="play a-${a}">${ACTION[a]}</span></div>
+      <button class="close" id="sheet-close" aria-label="Close">×</button></div>
+    <div class="why">${paras.map((p,i)=>`<p${i>0?' class="callout"':''}>${p}</p>`).join('')}${notes.map(n=>`<p class="rnote">${n}</p>`).join('')}</div>
+    <div class="ev-head"><h3 id="ev-title">Expected results</h3><button type="button" class="info" id="ev-info" aria-expanded="false" aria-controls="ev-tip" aria-label="What do these numbers mean?">i</button>
+      <div class="tip" id="ev-tip" role="note" hidden><p>What each option wins or loses on average, assuming you play the rest of the hand correctly. Negative means the hand loses money on average; the chart picks the option that loses least or wins most.</p><p>${RULES.holeCard?'The dealer has already checked for blackjack.':'Includes the chance that the dealer has blackjack.'} Calculated for your table rules with a simplified infinite-deck model.</p></div></div>
+    <table class="evt" aria-labelledby="ev-title"><thead><tr><th>Option</th><th>Per bet</th><th>Per €10</th></tr></thead><tbody>
+      ${rows.map(([k,v])=>`<tr class="${k===a?'best':''}"><td>${ACTION[k]}${k===a?'<span class="chip-s chart">Chart</span>':''}${k===top&&k!==a?'<span class="chip-s top">Model</span>':''}</td><td>${fmtEV(v)}</td><td>${fmtEur(v)}</td></tr>`).join('')}
+    </tbody></table>
+    ${modelNote}
+    ${st?`<p class="small">Your record on this hand: ${st.seen-st.wrong} of ${st.seen} right.</p>`:''}`;
+  sheetReturn=document.activeElement;sheetOnClose=onClose||null;
+  scrim.hidden=false;sheet.hidden=false;sheet.scrollTop=0;
+  document.documentElement.classList.add('locked');
+  const info=document.getElementById('ev-info'),tip=document.getElementById('ev-tip');
+  info.onclick=e=>{e.stopPropagation();const open=tip.hidden;tip.hidden=!open;info.setAttribute('aria-expanded',open)};
+  document.getElementById('sheet-close').onclick=closeSheet;
+  document.getElementById('sheet-close').focus();
+}
+function closeSheet(){
+  if(sheet.hidden)return;
+  sheet.hidden=true;scrim.hidden=true;
+  document.documentElement.classList.remove('locked');
+  const cb=sheetOnClose;sheetOnClose=null;
+  if(sheetReturn&&document.contains(sheetReturn))sheetReturn.focus();
+  if(cb)cb();
+}
+scrim.onclick=closeSheet;
+function closeTip(){const t=document.getElementById('ev-tip');if(t&&!t.hidden){t.hidden=true;document.getElementById('ev-info').setAttribute('aria-expanded','false');return true}return false}
+sheet.addEventListener('click',e=>{if(!e.target.closest('#ev-tip,#ev-info'))closeTip()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!sheet.hidden){e.preventDefault();if(!closeTip())closeSheet()}});
 
 /* ---------- Storage (own IndexedDB, falls back to memory) ---------- */
 let rounds=[],cells={};
@@ -316,7 +581,7 @@ function pickCell(){
 const stage=document.getElementById('stage');
 let D=null,tick=null;
 function intro(){
-  clearInterval(tick);D=null;stage.classList.remove('right','wrong');
+  clearInterval(tick);D=null;stage.classList.remove('right','wrong','waiting');
   stage.innerHTML=`<p class="lead">Play every hand by the book.</p>
     <p class="copy">${HANDS} hands, each with the dealer's upcard. Tap what basic strategy says. Hands you get wrong come back more often.</p>
     <p class="rules-line">${rulesLine()}. <a href="#rules" id="to-rules">Change rules</a></p>
@@ -339,7 +604,7 @@ function deal(){
   stage.innerHTML=`<div class="hud"><span>${D.k+1} / ${HANDS}</span><span id="t">${D.time.toFixed(1)} s</span></div>
     <div class="seat"><h3>Dealer</h3><div class="cards">${cardHTML(D.cur.up)}</div></div>
     <div class="seat"><h3>You</h3><div class="cards">${D.cur.cards.map(cardHTML).join('')}</div></div>
-    <p class="verdict" id="verdict"></p>
+    <div class="verdict" id="verdict"></div>
     <div class="actions">
       <button class="btn ghost" data-a="H">Hit<kbd>H</kbd></button>
       <button class="btn ghost" data-a="S">Stand<kbd>S</kbd></button>
@@ -365,16 +630,33 @@ async function answer(a){
   cells[id]=st;Store.put('cells',st);
   if(ok)D.right++;else D.missed.push({...c,you:a});
   stage.classList.add(ok?'right':'wrong');
-  if(!ok)document.getElementById('verdict').innerHTML=`<b>${ACTION[c.answer]}</b> · ${handName(c.cat,c.row)} vs ${UPS[c.ui]}`;
   D.k++;
-  setTimeout(()=>{if(!D)return;D.k>=HANDS?finish():deal()},ok?180:1500);
+  if(ok){setTimeout(()=>{if(D)advance()},180);return}
+  D.waiting=true;
+  stage.classList.add('waiting');
+  document.getElementById('verdict').innerHTML=`<b>${ACTION[c.answer]}</b> · ${handName(c.cat,c.row)} vs ${upName(c.ui)}
+    <div class="vrow"><button class="btn ghost small" id="why">Why?</button></div><span class="tap-hint">Tap anywhere to continue</span>`;
+  document.getElementById('why').onclick=()=>openSheet(c.cat,c.row,c.ui,()=>stage.focus());
+  stage.focus();
+}
+stage.addEventListener('click',e=>{
+  if(!D||!D.waiting)return;
+  if(e.target.closest('#why,[data-a]'))return;
+  advance();
+});
+function advance(){
+  if(!D)return;
+  D.waiting=false;
+  stage.classList.remove('waiting');
+  D.k>=HANDS?finish():deal();
 }
 async function finish(){
   clearInterval(tick);
   stage.classList.remove('right','wrong');
   const per=D.time/HANDS,all=D.right===HANDS;
   const key=scoreOf(all,per),sc=SCORE[key];
-  const miss=D.missed.slice(0,5).map(m=>`<span>${rowLabel(m.cat,m.row)} vs ${UPS[m.ui]} → ${ACTION[m.answer]} (you: ${ACTION[m.you]})</span>`).join('');
+  const missed=D.missed.slice(0,5);
+  const miss=missed.map((m,i)=>`<button class="linkish" data-m="${i}">${rowLabel(m.cat,m.row)} vs ${UPS[m.ui]} → ${ACTION[m.answer]} (you: ${ACTION[m.you]})</button>`).join('');
   stage.innerHTML=`<div class="badge" style="background:${sc.c};--glow:${sc.c}"></div>
     <p class="lead">${sc.label}</p>
     <dl class="stats">
@@ -387,6 +669,7 @@ async function finish(){
     <div class="row"><button class="btn" id="again">Again</button><button class="btn ghost" id="see-chart">See chart</button></div>`;
   document.getElementById('again').onclick=startDrill;
   document.getElementById('see-chart').onclick=()=>go('chart');
+  stage.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const m=missed[+b.dataset.m];openSheet(m.cat,m.row,m.ui)});
   const rec={ts:Date.now(),hands:HANDS,right:D.right,time:+D.time.toFixed(2),score:key,rules:{...RULES}};
   D=null;
   rounds.push(await Store.add('rounds',rec));
@@ -397,7 +680,13 @@ function renderHist(){
   document.getElementById('history').innerHTML=h.length?'Recent rounds:'+h.map(r=>`<i class="dot" style="background:${SCORE[r.score].c}" title="${SCORE[r.score].label}"></i>`).join(''):'';
 }
 document.addEventListener('keydown',e=>{
-  if(!D||D.busy||document.getElementById('view-drill').hidden||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(!D||!sheet.hidden||document.getElementById('view-drill').hidden||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(D.waiting){
+    if(e.key==='?'||e.key.toUpperCase()==='W'){e.preventDefault();document.getElementById('why').click()}
+    else if(['Enter',' ','ArrowRight'].includes(e.key)&&!(e.target.closest&&e.target.closest('button'))){e.preventDefault();advance()}
+    return;
+  }
+  if(D.busy)return;
   const k=e.key.toUpperCase();
   if('HSDPR'.includes(k)&&k.length===1){e.preventDefault();answer(k)}
 });
@@ -413,9 +702,10 @@ function renderChart(){
   const table=(title,cat)=>`<h3>${title}</h3><div class="chartwrap"><table class="bs"><thead><tr><th></th>${UPS.map(u=>`<th>${u}</th>`).join('')}</tr></thead><tbody>${
     ROWS.filter(([c])=>c===cat).map(([c,r])=>`<tr><th class="rowh" scope="row">${rowLabel(c,r)}</th>${UPS.map((_,i)=>{
       const a=actionFor(c,r,i),st=cells[cellId(c,r,i)];
-      return `<td class="a-${a}" title="${rowLabel(c,r)} vs ${UPS[i]}: ${ACTION[a]}${st?` · ${st.wrong} wrong of ${st.seen}`:''}">${a}${st&&st.wrong?`<span class="m">${st.wrong}</span>`:''}</td>`}).join('')}</tr>`).join('')
+      return `<td class="cell a-${a}"><button type="button" data-c="${c}" data-r="${r}" data-u="${i}" aria-label="${rowLabel(c,r)} vs ${upName(i)}: ${ACTION[a]}. Explain">${a}</button>${st&&st.wrong?`<span class="m" aria-hidden="true">${st.wrong}</span>`:''}</td>`}).join('')}</tr>`).join('')
   }</tbody></table></div>`;
   document.getElementById('chart-body').innerHTML=`<div style="display:flex;flex-direction:column;gap:12px">${table('Hard totals','hard')}${table('Soft totals','soft')}${table('Pairs','pair')}</div>`;
+  document.querySelectorAll('#chart-body [data-c]').forEach(b=>b.onclick=()=>openSheet(b.dataset.c,b.dataset.r,+b.dataset.u));
 }
 
 /* ---------- Rules & limits ---------- */
@@ -486,6 +776,7 @@ let current=null;
 function hashView(){try{const h=location.hash.slice(1);return VIEWS.includes(h)?h:null}catch(e){return null}}
 function go(v){try{history.replaceState(null,'','#'+v)}catch(e){}show_(v)}
 function show_(v){
+  closeSheet();
   const leaving=current==='drill'&&v!=='drill';
   current=v;
   VIEWS.forEach(k=>{document.getElementById('view-'+k).hidden=k!==v;document.getElementById('tab-'+k).setAttribute('aria-selected',k===v)});
