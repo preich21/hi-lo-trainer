@@ -1,6 +1,18 @@
 # Hi-Lo Trainer
 
-A small, single-page trainer for the Hi-Lo card counting system.
+Small trainers for Hi-Lo card counting and blackjack basic strategy.
+
+## Navigation
+
+The top bar has one entry per trainer: **Counting** (`index.html`), **Strategy** (`strategy.html`) and **True count** (`truecount.html`). Below it, every trainer has the same row: its drills as tabs, plus a **Stats** and a **Settings** icon on the right.
+
+| Trainer | Drills | Stats | Settings |
+|---|---|---|---|
+| Counting | Level 1 · 2 · 3 (`#level1`–`#level3`) | chart + rounds (`#stats`) | speed limits (`#settings`) |
+| Strategy | Drill · Chart | chart, most-missed hands, rounds | table rules + speed limits |
+| True count | Decks · Divide · Combined | chart per drill, rounds | shoe, rounding, deck marks, speed limits |
+
+Old links (`#train`, `#results`, `#progress`, `#limits`, `#rules`) still work.
 
 **Live:** https://preich21.github.io/hi-lo-trainer/
 
@@ -28,26 +40,20 @@ Any wrong answer is **Miscounted** (red). Correct rounds are rated by speed. Pre
 | 2 · Pairs | ≤ 0.4 s per card | ≤ 0.65 s per card | slower |
 | 3 · Flash | ≤ 1.5 s per hand | ≤ 2.5 s per hand | slower |
 
-The limits can be changed per level on the Limits page and reset to these presets.
+The limits can be changed per level under Settings and reset to these presets.
 
 Rounds and limits are saved in your browser (IndexedDB), so they survive closing the tab. Each device keeps its own.
 
-## Pages
-
-- **Train** – the three levels above.
-- **Results** (`#results`) – latest rounds with rating, time and seconds per card or hand, plus the mix of your last 50 rounds.
-- **Progress** (`#progress`) – chart of up to your last 500 rounds, colour-coded, with a 10-round average and the limit lines of the selected level.
-- **Limits** (`#limits`) – set your own limits per level.
-- **Strategy** (`strategy.html`) – basic strategy trainer, see below.
-- **True count** (`truecount.html`) – true count trainer, see below.
+**Stats** shows a chart of up to your last 500 rounds (colour-coded, with a 10-round average and the limit lines of the selected level), the rating mix of your last 50 rounds and the list of rounds.
 
 ## Basic strategy trainer
 
-`strategy.html` is a separate page with three tabs:
+`strategy.html` is a separate page with two drill tabs plus Stats and Settings:
 
 - **Drill** – 20 hands with the dealer's upcard. Tap Hit, Stand, Double, Split or Surrender (keys H, S, D, P, R). Hands you get wrong come back more often. Rated Casino-ready (≤ 1.5 s per hand), Workable (≤ 3 s), Too slow, or Misplayed.
 - **Chart** – the full strategy for the selected table rules, with your mistakes per hand. Tap any hand for an explanation of the play, notes on how other table rules would change it, and the expected result of every option (per bet and per €10). After a wrong answer in the drill, **Why?** opens the same explanation.
-- **Rules** – hole card yes/no, dealer stands/hits soft 17, double after split, late surrender, plus the speed limits.
+- **Stats** – chart of seconds per hand, your most-missed hands (tap for the explanation) and your rounds.
+- **Settings** – hole card yes/no, dealer stands/hits soft 17, double after split, late surrender, plus the speed limits.
 
 The expected results are calculated in the page with an infinite-deck model for the selected rules. They agree with the chart on all but two hands (A,2 vs 5 and A,4 vs 4, by less than 0.01), where the chart, built for real 4–8 deck shoes, is right.
 

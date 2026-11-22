@@ -43,6 +43,43 @@ h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.09em;color:var(--mut
 .nav.more-r{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent)}
 .nav.more-l{-webkit-mask-image:linear-gradient(to right,transparent,#000 32px);mask-image:linear-gradient(to right,transparent,#000 32px)}
 .nav.more-l.more-r{-webkit-mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent)}
+.subnav{display:flex;gap:6px;align-items:stretch}
+.subnav .tabs{flex:1;min-width:0}
+.iconbtn{appearance:none;border:0;background:rgba(0,0,0,.22);color:var(--muted);width:52px;flex:none;border-radius:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:500 .66rem var(--f-body);padding:6px 0}
+.iconbtn svg{width:19px;height:19px}
+.iconbtn[aria-current="page"]{background:var(--rail);color:var(--text)}
+.iconbtn:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+@media (hover:hover){.iconbtn:hover{color:var(--text)}}
+.sec{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600;margin:6px 0 0}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.toolbar h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{appearance:none;border:1px solid var(--line);background:transparent;color:var(--muted);font:500 .8rem var(--f-body);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--rail);color:var(--text);border-color:var(--rail)}
+.chip:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.mix{display:flex;height:10px;border-radius:5px;overflow:hidden;background:rgba(0,0,0,.25)}
+.mix i{display:block;height:100%}
+.counts{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.counts span{display:flex;align-items:center;gap:6px}
+.counts b{color:var(--text);font-family:var(--f-mono);font-weight:500}
+.list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.list li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:11px 2px;border-bottom:1px solid rgba(216,180,90,.12)}
+.list .dot{grid-row:span 2}
+.list .what{font-weight:500}
+.list .when{color:var(--muted);font-size:.78rem;grid-column:2}
+.list .num2{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right;grid-row:span 2;font-size:.95rem}
+.list .num2 small{display:block;color:var(--muted);font-size:.72rem}
+.empty{border:1px dashed var(--line);border-radius:16px;padding:28px 18px;text-align:center;color:var(--muted);line-height:1.5}
+.empty strong{display:block;color:var(--text);font-family:var(--f-display);font-weight:400;font-size:1.2rem;margin-bottom:4px}
+.chartbox{border:1px solid var(--line);border-radius:18px;padding:12px 8px 6px;background:rgba(0,0,0,.14)}
+.chartbox svg{display:block;width:100%;height:auto;max-width:100%}
+.cax{fill:var(--muted);font:13px var(--f-mono)}
+.cgrid{stroke:rgba(159,184,173,.14);stroke-width:1}
+.thr{stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+.avg{stroke:var(--text);stroke-width:1.6;fill:none;opacity:.75}
+.note .k{display:inline-block;width:18px;height:0;border-top:2px solid var(--text);opacity:.75;vertical-align:middle;margin-right:4px}
+.stats-wrap{display:flex;flex-direction:column;gap:12px}
+.mtag{display:inline-block;font:600 .72rem var(--f-mono);padding:2px 7px;border-radius:5px;margin-left:6px;vertical-align:1px}
 .nav a[aria-current="page"]{color:var(--text);border-color:var(--brass)}
 .nav a:focus-visible{outline:2px solid var(--brass);outline-offset:3px;border-radius:2px}
 
@@ -194,19 +231,19 @@ html.locked{overflow:hidden}
     <h1>Hi<span>·</span>Lo Trainer</h1>
     <span class="sub">Basic strategy</span>
   </header>
-  <nav class="nav" aria-label="Pages">
-    <a href="index.html#train">Train</a>
-    <a href="index.html#results">Results</a>
-    <a href="index.html#progress">Progress</a>
-    <a href="index.html#limits">Limits</a>
+  <nav class="nav" aria-label="Trainers">
+    <a href="index.html">Counting</a>
     <a href="strategy.html" aria-current="page">Strategy</a>
     <a href="truecount.html">True count</a>
   </nav>
 
-  <div class="tabs" role="tablist">
-    <button class="tab" role="tab" id="tab-drill" aria-selected="true">Drill</button>
-    <button class="tab" role="tab" id="tab-chart" aria-selected="false">Chart</button>
-    <button class="tab" role="tab" id="tab-rules" aria-selected="false">Rules</button>
+  <div class="subnav">
+    <div class="tabs" role="tablist" style="grid-template-columns:repeat(2,1fr)">
+      <button class="tab" role="tab" id="tab-drill" aria-selected="true">Drill</button>
+      <button class="tab" role="tab" id="tab-chart" aria-selected="false">Chart</button>
+    </div>
+    <button type="button" class="iconbtn" id="nav-stats" aria-label="Stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 20h18M6 20v-8M11 20V5M16 20v-5M21 20V9"/></svg>Stats</button>
+    <button type="button" class="iconbtn" id="nav-settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Settings</button>
   </div>
 
   <section class="view" id="view-drill">
@@ -221,14 +258,19 @@ html.locked{overflow:hidden}
     <p class="note">Tap any hand to see why it's played that way and what each option is worth. Red badges count your wrong answers on that hand. Never take insurance or even money: without a count it always loses. That changes once you count, at a true count of +3 or higher.</p>
   </section>
 
-  <section class="view" id="view-rules" hidden>
+  <section class="view" id="view-stats" hidden>
+    <div class="toolbar"><h2>Stats</h2></div>
+    <div id="stats-body" class="stats-wrap"></div>
+  </section>
+
+  <section class="view" id="view-settings" hidden>
+    <div class="toolbar"><h2>Settings</h2></div>
     <div class="about">
       <p>Basic strategy depends slightly on the table rules. Set them to match the casino you'll play in; the drill and the chart follow immediately. The defaults are the usual European shoe game.</p>
       <p>The strategy assumes 4–8 decks and that you may double on any first two cards. It comes from the standard multi-deck charts, with the three European no-hole-card changes: hit 11 against a 10, hit 8,8 against a 10 or Ace, and hit A,A against an Ace.</p>
     </div>
     <fieldset class="box"><legend>Table rules</legend><div id="rules-body" style="display:flex;flex-direction:column;gap:14px"></div></fieldset>
     <form class="box" id="limits-form" novalidate></form>
-    <div class="row left"><button class="btn danger small" type="button" id="reset-stats">Delete drill history</button></div>
   </section>
 </div>
 
@@ -588,11 +630,11 @@ function intro(){
   clearInterval(tick);D=null;stage.classList.remove('right','wrong','waiting');
   stage.innerHTML=`<p class="lead">Play every hand by the book.</p>
     <p class="copy">${HANDS} hands, each with the dealer's upcard. Tap what basic strategy says. Hands you get wrong come back more often.</p>
-    <p class="rules-line">${rulesLine()}. <a href="#rules" id="to-rules">Change rules</a></p>
+    <p class="rules-line">${rulesLine()}. <a href="#settings" id="to-rules">Change rules</a></p>
     <button class="btn" id="go">Start</button>
     <div class="scale">${Object.values(SCORE).map(s=>`<span><i class="dot" style="background:${s.c}"></i>${s.label}</span>`).join('')}</div>`;
   document.getElementById('go').onclick=startDrill;
-  document.getElementById('to-rules').onclick=e=>{e.preventDefault();go('rules')};
+  document.getElementById('to-rules').onclick=e=>{e.preventDefault();go('settings')};
 }
 function startDrill(){
   D={k:0,right:0,time:0,missed:[],busy:false};
@@ -767,29 +809,98 @@ function renderLimits(status){
     resetTimer=setTimeout(()=>{delete rb.dataset.armed;rb.textContent='Reset to presets'},3500);
   };
 }
-const statsBtn=document.getElementById('reset-stats');
-statsBtn.onclick=async()=>{
-  if(statsBtn.dataset.armed){clearTimeout(statsTimer);delete statsBtn.dataset.armed;await Store.clear('rounds');await Store.clear('cells');rounds=[];cells={};renderHist();statsBtn.textContent='Drill history deleted';setTimeout(()=>statsBtn.textContent='Delete drill history',2500);return}
-  statsBtn.dataset.armed='1';statsBtn.textContent='Tap again to delete rounds and mistake counts';
-  statsTimer=setTimeout(()=>{delete statsBtn.dataset.armed;statsBtn.textContent='Delete drill history'},3500);
-};
+/* ---------- Stats building blocks (chart, rating mix) ---------- */
+const dtf=new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+function niceStep(range){for(const s of [0.1,0.25,0.5,1,2])if(range/s<=6)return s;return 5}
+function chartHTML(per,scores,lim,unit,limHint){
+  const W=460,H=260,L=44,R=10,T=26,B=30,w=W-L-R,h=H-T-B,n=per.length;
+  const lo=lim?lim.ok*1.5:1.2,cap=lim?lim.ok*4:Math.max(3,lo);
+  const yMax=Math.min(cap,Math.max(lo,Math.ceil(Math.max(...per)*4)/4));
+  const x=i=>L+(n===1?w/2:i/(n-1)*w);
+  const y=v=>T+h-(Math.min(v,yMax)/yMax)*h;
+  const step=niceStep(yMax);
+  let g='';
+  for(let v=0;v<=yMax+1e-9;v+=step)g+=`<line class="cgrid" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text class="cax" x="${L-8}" y="${y(v)+4}" text-anchor="end">${num(v)}</text>`;
+  if(lim){
+    g+=`<line class="thr" style="stroke:var(--good)" x1="${L}" x2="${W-R}" y1="${y(lim.fast)}" y2="${y(lim.fast)}"/>`;
+    g+=`<line class="thr" style="stroke:var(--ok)" x1="${L}" x2="${W-R}" y1="${y(lim.ok)}" y2="${y(lim.ok)}"/>`;
+  }
+  (n===1?[0]:[0,Math.round((n-1)/2),n-1]).forEach(i=>{g+=`<text class="cax" x="${x(i)}" y="${H-10}" text-anchor="middle">${i+1}</text>`});
+  g+=`<text class="cax" x="${L}" y="${T-12}" text-anchor="start">seconds per ${unit}</text>`;
+  const pts=[];
+  for(let i=0;i<n;i++){const a=per.slice(Math.max(0,i-9),i+1);pts.push(`${x(i).toFixed(1)},${y(a.reduce((s,v)=>s+v,0)/a.length).toFixed(1)}`)}
+  if(n>2)g+=`<polyline class="avg" points="${pts.join(' ')}"/>`;
+  const rad=n>250?2.6:n>80?3.4:4.5;
+  per.forEach((v,i)=>{g+=`<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="${rad}" style="fill:${SCORE[scores[i]].c}"${v>yMax?' opacity=".7"':''}><title>#${i+1} · ${v.toFixed(2)} s/${unit}</title></circle>`});
+  const limNote=lim?`Dashed lines mark your casino-ready (${num(lim.fast)} s) and workable (${num(lim.ok)} s) limits per ${unit}.`:limHint;
+  return `<div class="chartbox"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Seconds per ${unit} for the last ${n} rounds">${g}</svg></div>
+    <p class="note"><span class="k"></span>10-round average. ${limNote} Last ${n} of up to 500 rounds, oldest on the left${per.some(v=>v>yMax)?'; slower rounds sit on the top edge':''}.</p>`;
+}
+function mixHTML(list,labelOf){
+  const n={good:0,ok:0,slow:0,bad:0};list.forEach(r=>n[r.score]++);
+  const tot=list.length||1;
+  return `<div class="mix" aria-hidden="true">${Object.keys(SCORE).map(k=>`<i style="width:${n[k]/tot*100}%;background:${SCORE[k].c}"></i>`).join('')}</div>
+    <div class="counts">${Object.keys(SCORE).map(k=>`<span><i class="dot" style="background:${SCORE[k].c}"></i>${labelOf(k)} <b>${n[k]}</b></span>`).join('')}</div>`;
+}
+function armButton(btn,idle,armed,run){
+  let t=null;
+  btn.onclick=async()=>{
+    if(btn.dataset.armed){clearTimeout(t);delete btn.dataset.armed;await run();return}
+    btn.dataset.armed='1';btn.textContent=armed;
+    t=setTimeout(()=>{delete btn.dataset.armed;btn.textContent=idle},3500);
+  };
+}
+
+/* ---------- Stats view ---------- */
+let shown=50;
+function renderStats(){
+  const body=document.getElementById('stats-body');
+  const missedCells=Object.values(cells).filter(c=>c.wrong>0).sort((a,b)=>b.wrong-a.wrong||b.wrong/b.seen-a.wrong/a.seen).slice(0,10);
+  if(!rounds.length&&!missedCells.length){body.innerHTML=`<div class="empty"><strong>No rounds yet</strong>Finish a drill round and it shows up here. Results stay in this browser.</div>`;return}
+  const data=rounds.slice(-500),last50=rounds.slice(-50),recent=rounds.slice().reverse();
+  const miss=missedCells.map(c=>{
+    const [cat,row,up]=c.id.split('-'),ui=UPS.indexOf(up),a=actionFor(cat,row,ui);
+    return `<li><i class="dot" style="background:var(--bad)"></i>
+      <span class="what"><button class="linkish" data-c="${cat}" data-r="${row}" data-u="${ui}">${rowLabel(cat,row)} vs ${upName(ui)}</button><span class="mtag a-${a}">${ACTION[a]}</span></span>
+      <span class="num2">${c.wrong}×<small>wrong</small></span>
+      <span class="when">${c.seen-c.wrong} of ${c.seen} right</span></li>`}).join('');
+  body.innerHTML=`${data.length?chartHTML(data.map(r=>r.time/r.hands),data.map(r=>r.score),LIMITS,'hand',''):''}
+    ${missedCells.length?`<h3 class="sec">Most-missed hands</h3><p class="note">Tap a hand for the explanation. These come back more often in the drill.</p><ul class="list">${miss}</ul>`:''}
+    ${rounds.length?`<h3 class="sec">Rounds</h3><p class="note">Mix of your last ${last50.length} rounds</p>${mixHTML(last50,k=>SCORE[k].label)}
+    <ul class="list">${recent.slice(0,shown).map(r=>`<li><i class="dot" style="background:${SCORE[r.score].c}"></i>
+      <span class="what">${SCORE[r.score].label}</span>
+      <span class="num2">${r.time.toFixed(1)} s<small>${(r.time/r.hands).toFixed(2)} s/hand</small></span>
+      <span class="when">${dtf.format(r.ts)} · ${r.right}/${r.hands} right</span></li>`).join('')}</ul>`:''}
+    <div class="row">${recent.length>shown?`<button class="btn ghost small" id="more">Show ${Math.min(50,recent.length-shown)} more</button>`:''}
+      <button class="btn danger small" type="button" id="reset-stats">Delete drill history</button></div>`;
+  body.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>openSheet(b.dataset.c,b.dataset.r,+b.dataset.u));
+  const more=document.getElementById('more');if(more)more.onclick=()=>{shown+=50;renderStats()};
+  armButton(document.getElementById('reset-stats'),'Delete drill history','Tap again to delete rounds and mistake counts',async()=>{
+    await Store.clear('rounds');await Store.clear('cells');rounds=[];cells={};renderHist();renderStats();
+  });
+}
 
 /* ---------- Routing (sub-views) ---------- */
-const VIEWS=['drill','chart','rules'];
+const VIEWS=['drill','chart','stats','settings'];
+const ALIAS={drill:'drill',chart:'chart',stats:'stats',settings:'settings',rules:'settings'};
 let current=null;
-function hashView(){try{const h=location.hash.slice(1);return VIEWS.includes(h)?h:null}catch(e){return null}}
+function hashView(){try{return ALIAS[location.hash.slice(1)]||null}catch(e){return null}}
 function go(v){try{history.replaceState(null,'','#'+v)}catch(e){}show_(v)}
 function show_(v){
   closeSheet();
   const leaving=current==='drill'&&v!=='drill';
   current=v;
-  VIEWS.forEach(k=>{document.getElementById('view-'+k).hidden=k!==v;document.getElementById('tab-'+k).setAttribute('aria-selected',k===v)});
+  VIEWS.forEach(k=>document.getElementById('view-'+k).hidden=k!==v);
+  ['drill','chart'].forEach(k=>document.getElementById('tab-'+k).setAttribute('aria-selected',k===v));
+  ['stats','settings'].forEach(k=>{const b=document.getElementById('nav-'+k);if(k===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   if(v==='drill'&&(!D||leaving))intro();
   if(leaving){clearInterval(tick);D=null}
   if(v==='chart')renderChart();
-  if(v==='rules')renderRules();
+  if(v==='stats'){shown=50;renderStats()}
+  if(v==='settings')renderRules();
 }
-VIEWS.forEach(k=>document.getElementById('tab-'+k).onclick=()=>go(k));
+['drill','chart'].forEach(k=>document.getElementById('tab-'+k).onclick=()=>go(k));
+['stats','settings'].forEach(k=>document.getElementById('nav-'+k).onclick=()=>{if(current!==k)go(k)});
 window.addEventListener('hashchange',()=>show_(hashView()||'drill'));
 
 (async()=>{

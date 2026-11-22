@@ -41,6 +41,14 @@ h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
 .nav.more-r{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent)}
 .nav.more-l{-webkit-mask-image:linear-gradient(to right,transparent,#000 32px);mask-image:linear-gradient(to right,transparent,#000 32px)}
 .nav.more-l.more-r{-webkit-mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent)}
+.subnav{display:flex;gap:6px;align-items:stretch}
+.subnav .tabs{flex:1;min-width:0}
+.iconbtn{appearance:none;border:0;background:rgba(0,0,0,.22);color:var(--muted);width:52px;flex:none;border-radius:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:500 .66rem var(--f-body);padding:6px 0}
+.iconbtn svg{width:19px;height:19px}
+.iconbtn[aria-current="page"]{background:var(--rail);color:var(--text)}
+.iconbtn:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+@media (hover:hover){.iconbtn:hover{color:var(--text)}}
+.sec{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600;margin:6px 0 0}
 .nav a[aria-current="page"]{color:var(--text);border-color:var(--brass)}
 .nav a:focus-visible{outline:2px solid var(--brass);outline-offset:3px;border-radius:2px}
 
@@ -151,43 +159,39 @@ h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
     <h1>Hi<span>·</span>Lo Trainer</h1>
     <div class="legend"><span>2–6 <b>+1</b></span><span>7–9 <b>0</b></span><span>10–A <b>−1</b></span></div>
   </header>
-  <nav class="nav" aria-label="Views">
-    <a href="#train" id="nav-train">Train</a>
-    <a href="#results" id="nav-results">Results</a>
-    <a href="#progress" id="nav-progress">Progress</a>
-    <a href="#limits" id="nav-limits">Limits</a>
-    <a href="strategy.html" id="nav-strategy">Strategy</a>
-    <a href="truecount.html" id="nav-truecount">True count</a>
+  <nav class="nav" aria-label="Trainers">
+    <a href="index.html" aria-current="page">Counting</a>
+    <a href="strategy.html">Strategy</a>
+    <a href="truecount.html">True count</a>
   </nav>
 
-  <section class="view" id="view-train">
+  <div class="subnav">
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" id="tab-single" aria-selected="true">Level 1<small>Last card</small></button>
       <button class="tab" role="tab" id="tab-pairs" aria-selected="false">Level 2<small>Pairs</small></button>
       <button class="tab" role="tab" id="tab-flash" aria-selected="false">Level 3<small>Flash</small></button>
     </div>
+    <button type="button" class="iconbtn" id="nav-stats" aria-label="Stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 20h18M6 20v-8M11 20V5M16 20v-5M21 20V9"/></svg>Stats</button>
+    <button type="button" class="iconbtn" id="nav-settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Settings</button>
+  </div>
+
+  <section class="view" id="view-train">
     <div class="stage" id="stage" tabindex="0"></div>
     <div class="history" id="history"></div>
   </section>
 
-  <section class="view" id="view-results" hidden>
+  <section class="view" id="view-stats" hidden>
     <div class="toolbar">
-      <h2>Latest results</h2>
-      <div class="chips" id="chips-results"></div>
+      <h2>Stats</h2>
+      <div class="chips" id="chips-stats"></div>
     </div>
+    <div id="progress-body"></div>
     <div id="results-body"></div>
   </section>
 
-  <section class="view" id="view-progress" hidden>
-    <div class="toolbar">
-      <h2>Progress</h2>
-      <div class="chips" id="chips-progress"></div>
-    </div>
-    <div id="progress-body"></div>
-  </section>
-
-  <section class="view" id="view-limits" hidden>
-    <h2>Limits</h2>
+  <section class="view" id="view-settings" hidden>
+    <h2>Settings</h2>
+    <h3 class="sec">Speed limits</h3>
     <div class="about">
       <p>These limits decide whether a correct round counts as <b>casino-ready</b>, <b>workable</b> or <b>too slow</b>. Any wrong answer always counts as <b>miscounted</b>, whatever the time.</p>
       <p>The presets are deliberate. Counting down a full deck in about 25 seconds (0.5 s per card) is the usual training standard for counters. Pairs are stricter because high and low cards cancel out. Flash is measured per hand including your tap, close to the time you get at a real table when the dealer flips and sweeps cards. If you're casino-ready at all three, you're well prepared for real card counting. Change them only if you want to start easier and tighten them later.</p>
@@ -403,14 +407,19 @@ function renderHist(){
 
 function setMode(m){
   mode=m;
-  MODES.forEach(k=>document.getElementById('tab-'+k).setAttribute('aria-selected',k===m));
   renderHist();intro();
+  show_('train');setHash(LEVEL_HASH[m]);
 }
 MODES.forEach(k=>document.getElementById('tab-'+k).onclick=()=>setMode(k));
 stage.addEventListener('click',e=>{if(!e.target.closest('button'))next()});
 document.addEventListener('keydown',e=>{if([' ','Enter','ArrowRight'].includes(e.key)&&stage.classList.contains('dealing')&&!document.getElementById('view-train').hidden){e.preventDefault();next()}});
 
-/* ---------- Filters shared by Results and Progress ---------- */
+/* ---------- Stats view: chart (progress) on top, rounds below ---------- */
+function renderStats(){
+  bindChips('chips-stats',renderStats);
+  renderProgress();
+  renderResults();
+}
 let filter='all';
 const FILTERS=[['all','All'],['single','L1'],['pairs','L2'],['flash','L3']];
 function chipsHTML(){return FILTERS.map(([k,l])=>`<button class="chip" data-f="${k}" aria-pressed="${filter===k}">${l}</button>`).join('')}
@@ -425,19 +434,18 @@ function countsHTML(list){
   return `<div class="mix" aria-hidden="true">${Object.keys(SCORE).map(k=>`<i style="width:${n[k]/tot*100}%;background:${SCORE[k].c}"></i>`).join('')}</div>
     <div class="counts">${Object.keys(SCORE).map(k=>`<span><i class="dot" style="background:${SCORE[k].c}"></i>${SCORE[k].label} <b>${n[k]}</b></span>`).join('')}</div>`;
 }
-const emptyHTML=`<div class="empty"><strong>No rounds yet</strong>Finish a round in Train and it shows up here. Results stay in this browser.</div>`;
+const emptyHTML=`<div class="empty"><strong>No rounds yet</strong>Finish a round in any level and it shows up here. Results stay in this browser.</div>`;
 
 /* ---------- Results view ---------- */
 let shown=50,confirmTimer=null;
 const dtf=new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 function renderResults(){
-  bindChips('chips-results',renderResults);
   const list=filtered();
   const body=document.getElementById('results-body');
-  if(!list.length){body.innerHTML=emptyHTML;return}
+  if(!list.length){body.innerHTML='';return}
   const recent=list.slice().reverse();
   const last50=list.slice(-50);
-  body.innerHTML=`<p class="note">Last ${last50.length} rounds</p>${countsHTML(last50)}
+  body.innerHTML=`<h3 class="sec">Rounds</h3><p class="note">Mix of your last ${last50.length} rounds</p>${countsHTML(last50)}
     <ul class="list">${recent.slice(0,shown).map(r=>{
       const s=SCORE[r.score];
       return `<li><i class="dot" style="background:${s.c}" title="${s.label}"></i>
@@ -449,7 +457,7 @@ function renderResults(){
   const more=document.getElementById('more');if(more)more.onclick=()=>{shown+=50;renderResults()};
   const clr=document.getElementById('clear');
   clr.onclick=async()=>{
-    if(clr.dataset.armed){clearTimeout(confirmTimer);await Store.clear();results=[];renderHist();renderResults();return}
+    if(clr.dataset.armed){clearTimeout(confirmTimer);await Store.clear();results=[];renderHist();renderStats();return}
     clr.dataset.armed='1';clr.textContent=`Tap again to delete ${results.length} results`;
     confirmTimer=setTimeout(()=>{delete clr.dataset.armed;clr.textContent='Delete all results'},3500);
   };
@@ -458,7 +466,6 @@ function renderResults(){
 /* ---------- Progress view (SVG chart, last 500) ---------- */
 function niceStep(range){for(const s of [0.1,0.25,0.5,1,2])if(range/s<=6)return s;return 5}
 function renderProgress(){
-  bindChips('chips-progress',renderProgress);
   const data=filtered().slice(-500);
   const body=document.getElementById('progress-body');
   if(!data.length){body.innerHTML=emptyHTML;return}
@@ -488,7 +495,6 @@ function renderProgress(){
   data.forEach((r,i)=>{const over=per[i]>yMax;g+=`<circle cx="${x(i).toFixed(1)}" cy="${y(per[i]).toFixed(1)}" r="${rad}" style="fill:${SCORE[r.score].c}"${over?' opacity=".7"':''}><title>#${i+1} · ${SCORE[r.score].label} · ${per[i].toFixed(2)} s/${unit}</title></circle>`});
   const limNote=lim?`Dashed lines mark your casino-ready (${num(lim.fast)} s) and workable (${num(lim.ok)} s) limits per ${unit}.`:'Pick a level to see its limits; each level has its own.';
   body.innerHTML=`<div class="chartbox"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Seconds per ${unit} for the last ${n} rounds">${g}</svg></div>
-    ${countsHTML(data)}
     <p class="note"><span class="k"></span>10-round average. ${limNote} Showing the last ${n} of up to 500 rounds, oldest on the left${per.some(v=>v>yMax)?'; slower rounds sit on the top edge':''}. Each dot keeps the colour it got with the limits at the time.</p>`;
 }
 
@@ -536,33 +542,38 @@ function renderLimits(status){
   };
 }
 
-/* ---------- Routing ---------- */
-const VIEWS=['train','results','progress','limits'];
+/* ---------- Routing ----------
+   #level1 #level2 #level3 → that level, #stats, #settings.
+   Old links keep working: #train, #results, #progress, #limits. */
+const LEVEL_HASH={single:'level1',pairs:'level2',flash:'level3'};
+const ALIAS={train:'train',level1:'train',level2:'train',level3:'train',stats:'stats',results:'stats',progress:'stats',settings:'settings',limits:'settings'};
 let current='train';
-function hashView(){try{const h=location.hash.slice(1);return VIEWS.includes(h)?h:null}catch(e){return null}}
-function go(v){
-  if(v===current)return;
-  try{history.replaceState(null,'','#'+v)}catch(e){}
-  show_(v);
-}
-function route(){show_(hashView()||current)}
+function readHash(){try{const h=location.hash.slice(1);if(!ALIAS[h])return null;return {view:ALIAS[h],mode:MODES.find(k=>LEVEL_HASH[k]===h)||null}}catch(e){return null}}
+function setHash(h){try{history.replaceState(null,'','#'+h)}catch(e){}}
 function show_(v){
   current=v;
-  VIEWS.forEach(k=>{document.getElementById('view-'+k).hidden=k!==v;const a=document.getElementById('nav-'+k);if(k===v)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
-  if(v==='results'){shown=50;renderResults()}
-  if(v==='progress')renderProgress();
-  if(v==='limits')renderLimits();
+  ['train','stats','settings'].forEach(k=>document.getElementById('view-'+k).hidden=k!==v);
+  MODES.forEach(k=>document.getElementById('tab-'+k).setAttribute('aria-selected',v==='train'&&k===mode));
+  ['stats','settings'].forEach(k=>{const b=document.getElementById('nav-'+k);if(k===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+  if(v==='stats'){shown=50;renderStats()}
+  if(v==='settings')renderLimits();
 }
+function openView(v){if(v===current)return;setHash(v);show_(v)}
+function route(){const r=readHash();if(!r)return;if(r.mode&&r.mode!==mode){setMode(r.mode);return}show_(r.view)}
 window.addEventListener('hashchange',route);
-VIEWS.forEach(k=>document.getElementById('nav-'+k).addEventListener('click',e=>{e.preventDefault();go(k)}));
+document.getElementById('nav-stats').onclick=()=>openView('stats');
+document.getElementById('nav-settings').onclick=()=>openView('settings');
 
 (async()=>{
-  setMode('single');route();
+  const r=readHash();
+  mode=(r&&r.mode)||'single';
+  renderHist();intro();show_(r?r.view:'train');
   await Store.open();
   const saved=await Store.get('limits');
   if(validLimits(saved))LIMITS=saved;
   results=(await Store.all()).sort((a,b)=>a.id-b.id);
-  renderHist();route();
+  renderHist();
+  if(current!=='train')show_(current);
 })();
 </script>
 <script>
