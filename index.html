@@ -53,8 +53,8 @@ h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
 .nav a:focus-visible{outline:2px solid var(--brass);outline-offset:3px;border-radius:2px}
 
 .view{display:flex;flex-direction:column;gap:14px;flex:1}
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:rgba(0,0,0,.22);padding:4px;border-radius:12px}
-.tab{appearance:none;border:0;background:transparent;color:var(--muted);font:500 .9rem var(--f-body);padding:10px 8px;border-radius:9px;cursor:pointer}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:rgba(0,0,0,.22);padding:4px;border-radius:12px}
+.tab{appearance:none;border:0;background:transparent;color:var(--muted);font:500 .84rem var(--f-body);padding:10px 2px;border-radius:9px;cursor:pointer}
 .tab[aria-selected="true"]{background:var(--rail);color:var(--text)}
 .tab small{display:block;font-size:.7rem;color:var(--muted);font-weight:400;margin-top:2px}
 .tab:focus-visible,.btn:focus-visible,.chip:focus-visible,.stage:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
@@ -95,6 +95,17 @@ h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
 .stepper{display:flex;align-items:center;gap:14px}
 .stepper .btn{width:56px;height:56px;padding:0;font-size:1.6rem}
 .num{font-family:var(--f-mono);font-size:2.4rem;min-width:3.5ch;font-variant-numeric:tabular-nums}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:260px}
+.keypad .btn{font-family:var(--f-mono);font-size:1.25rem;padding:13px 0}
+.auto-slot{min-height:170px;display:flex;align-items:center;justify-content:center}
+.ghostcard{width:118px;aspect-ratio:5/7;max-width:42vw;border:1.5px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.8rem}
+.linkbtn{all:unset;cursor:pointer;color:var(--brass);text-decoration:underline;text-underline-offset:2px}
+.linkbtn:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:2px}
+.pace-row{display:flex;flex-direction:column;gap:8px}
+.pace-row .t{font-size:.9rem}
+.stage.waiting{cursor:pointer}
+.stage.waiting .keypad,.stage.waiting #kp-ok{pointer-events:none;opacity:.35}
+.tap-hint{display:block;margin-top:4px;font-size:.78rem;color:var(--muted)}
 .badge{width:92px;height:92px;border-radius:50%;box-shadow:0 0 0 6px rgba(255,255,255,.06),0 0 40px var(--glow,transparent)}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:360px;margin:0}
 .stats div{background:rgba(0,0,0,.2);border-radius:10px;padding:10px 6px}
@@ -170,6 +181,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
       <button class="tab" role="tab" id="tab-single" aria-selected="true">Level 1<small>Last card</small></button>
       <button class="tab" role="tab" id="tab-pairs" aria-selected="false">Level 2<small>Pairs</small></button>
       <button class="tab" role="tab" id="tab-flash" aria-selected="false">Level 3<small>Flash</small></button>
+      <button class="tab" role="tab" id="tab-auto" aria-selected="false">Level 4<small>Auto</small></button>
     </div>
     <button type="button" class="iconbtn" id="nav-stats" aria-label="Stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 20h18M6 20v-8M11 20V5M16 20v-5M21 20V9"/></svg>Stats</button>
     <button type="button" class="iconbtn" id="nav-settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Settings</button>
@@ -191,10 +203,11 @@ h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
 
   <section class="view" id="view-settings" hidden>
     <h2>Settings</h2>
+    <fieldset class="lim" id="pace-form"></fieldset>
     <h3 class="sec">Speed limits</h3>
     <div class="about">
       <p>These limits decide whether a correct round counts as <b>casino-ready</b>, <b>workable</b> or <b>too slow</b>. Any wrong answer always counts as <b>miscounted</b>, whatever the time.</p>
-      <p>The presets are deliberate. Counting down a full deck in about 25 seconds (0.5 s per card) is the usual training standard for counters. Pairs are stricter because high and low cards cancel out. Flash is measured per hand including your tap, close to the time you get at a real table when the dealer flips and sweeps cards. If you're casino-ready at all three, you're well prepared for real card counting. Change them only if you want to start easier and tighten them later.</p>
+      <p>The presets are deliberate. Counting down a full deck in about 25 seconds (0.5 s per card) is the usual training standard for counters. Pairs are stricter because high and low cards cancel out. Flash is measured per hand including your tap, close to the time you get at a real table when the dealer flips and sweeps cards. Level 4 is rated by the dealing speed you pick. If you're casino-ready at all four, you're well prepared for real card counting. Change them only if you want to start easier and tighten them later.</p>
     </div>
     <form id="limits-form" novalidate></form>
   </section>
@@ -213,10 +226,10 @@ const SCORE={
   slow:{c:'var(--slow)',label:'Too slow'},
   bad:{c:'var(--bad)',label:'Miscounted'}
 };
-const LEVEL={single:'Level 1 · Last card',pairs:'Level 2 · Pairs',flash:'Level 3 · Flash'};
-const MODES=['single','pairs','flash'];
-const UNIT={single:'card',pairs:'card',flash:'hand'};
-const DEFAULT_LIMITS={single:{fast:0.5,ok:0.8},pairs:{fast:0.4,ok:0.65},flash:{fast:1.5,ok:2.5}};
+const LEVEL={single:'Level 1 · Last card',pairs:'Level 2 · Pairs',flash:'Level 3 · Flash',auto:'Level 4 · Dealer pace'};
+const MODES=['single','pairs','flash','auto'];
+const UNIT={single:'card',pairs:'card',flash:'hand',auto:'card'};
+const DEFAULT_LIMITS={single:{fast:0.5,ok:0.8},pairs:{fast:0.4,ok:0.65},flash:{fast:1.5,ok:2.5},auto:{fast:0.7,ok:1.0}};
 let LIMITS=clone(DEFAULT_LIMITS);
 const FLASH_HANDS=20;
 const INTRO={
@@ -266,7 +279,13 @@ function cardHTML(c){return `<div class="card${c.red?' r':''}"><div class="c tl"
 function secs(){return (performance.now()-S.t0)/1000}
 
 function intro(){
-  clearInterval(tick);S=null;stage.classList.remove('dealing','right','wrong');
+  stopAuto();
+  clearInterval(tick);S=null;stage.classList.remove('dealing','right','wrong','waiting');
+  if(mode==='auto'){
+    stage.innerHTML=autoIntroHTML()+`<button class="btn" id="go">Start</button>
+      <div class="scale">${Object.values(SCORE).map(s=>`<span><i class="dot" style="background:${s.c}"></i>${s.label}</span>`).join('')}</div>`;
+    document.getElementById('go').onclick=start;bindAutoIntro();return;
+  }
   const [lead,copy,hint]=INTRO[mode];
   stage.innerHTML=`<p class="lead">${lead}</p>
    <p class="copy">${copy}</p>
@@ -278,6 +297,7 @@ function intro(){
 
 function start(){
   if(mode==='flash')return startFlash();
+  if(mode==='auto')return startAuto();
   const d=deck();
   if(mode==='single'){const missing=d.pop();S={cards:d,missing,step:1}}
   else{const n=2*(10+(Math.random()*11|0));S={cards:d.slice(0,n),step:2}}
@@ -392,12 +412,198 @@ async function finishFlash(){
     </dl>
     ${miss?`<p class="missed">${miss}</p>`:''}
     <p class="hint">Casino-ready: all ${FLASH_HANDS} hands right at ${num(L.fast)} s per hand or faster (${num(FLASH_HANDS*L.fast)} s in total).</p>
-    <div class="row"><button class="btn" id="again">Again</button></div>`;
+    <div class="row"><button class="btn" id="again">Again</button>${key==='good'?'<button class="btn ghost" id="lvl">Go to level 4</button>':''}</div>`;
   document.getElementById('again').onclick=start;
+  const l4=document.getElementById('lvl');if(l4)l4.onclick=()=>setMode('auto');
   const rec={ts:Date.now(),mode:'flash',score:key,time:+S.time.toFixed(2),total:S.cardsSeen,hands:FLASH_HANDS,guess:S.right,truth:FLASH_HANDS,correct:all};
   S=null;
   results.push(await Store.add(rec));
   renderHist();
+}
+
+/* ---------- Level 4: Dealer pace ----------
+   A 6-deck shoe dealt one card at a time at a fixed speed. Cards come in rounds sized for the
+   number of players plus the dealer, with a short pause between rounds. The dealer stops at
+   three random round breaks and after the last round to ask for the running count. */
+const PACE_PRESETS=[['Slow',1.0],['Casino',0.7],['Fast',0.5]];
+const DEFAULT_PACE={interval:0.7,players:3};
+let PACE={...DEFAULT_PACE};
+const AUTO_CARDS=104, AUTO_CHECKS=4;
+const presetName=v=>(PACE_PRESETS.find(p=>Math.abs(p[1]-v)<1e-9)||['Custom'])[0];
+const gapSecs=()=>Math.max(1.2,2.5*PACE.interval);
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function extraCards(){const x=Math.random();return x<.45?0:x<.80?1:x<.94?2:x<.99?3:4}
+function buildSession(players){
+  const shoe=[];for(let i=0;i<6;i++)shoe.push(...deck());
+  shuffle(shoe);
+  const rounds=[];let n=0;
+  while(n<AUTO_CARDS){let c=0;for(let h=0;h<=players;h++)c+=2+extraCards();rounds.push(shoe.slice(n,n+c));n+=c}
+  const R=rounds.length;
+  const pool=shuffle([...Array(Math.max(0,R-2)).keys()].map(i=>i+1)); // breaks after rounds 2 … R-1
+  const checks=new Set([...pool.slice(0,AUTO_CHECKS-1),R-1]);
+  return {rounds,checks};
+}
+function autoIntroHTML(){
+  const chips=PACE_PRESETS.map(([n,v])=>`<button class="chip" data-pace="${v}" aria-pressed="${Math.abs(PACE.interval-v)<1e-9}">${n} ${num(v)} s</button>`).join('')
+    +(presetName(PACE.interval)==='Custom'?`<button class="chip" aria-pressed="true">Custom ${num(PACE.interval)} s</button>`:'');
+  return `<p class="lead">Keep up with the dealer.</p>
+    <p class="copy">Cards come automatically and you can't slow them down: about two decks, in rounds for ${PACE.players} player${PACE.players>1?'s':''} and the dealer. Up to four times between rounds, the dealer stops and asks for your running count.</p>
+    <div class="chips" style="justify-content:center">${chips}</div>
+    <p class="hint">Seconds per card. Players and your own speed: <a href="#settings" id="to-settings" style="color:var(--brass)">Settings</a></p>`;
+}
+function bindAutoIntro(){
+  stage.querySelectorAll('[data-pace]').forEach(b=>b.onclick=async()=>{PACE.interval=+b.dataset.pace;await Store.set('pace',PACE);intro()});
+  const ts=document.getElementById('to-settings');if(ts)ts.onclick=e=>{e.preventDefault();openView('settings')};
+}
+function startAuto(){
+  stopAuto();
+  const {rounds,checks}=buildSession(PACE.players);
+  S={auto:true,rounds,checks,ri:0,ci:0,rc:0,checkNo:0,right:0,missed:[],timer:null,phase:'deal',interval:PACE.interval,players:PACE.players,total:rounds.reduce((a,r)=>a+r.length,0)};
+  renderDealing();
+  S.timer=setTimeout(dealNext,400);
+}
+function stopAuto(){if(S&&S.auto&&S.timer)clearTimeout(S.timer)}
+function abortAuto(msg){
+  if(!S||!S.auto)return;
+  stopAuto();S=null;intro();
+  const n=document.createElement('p');n.className='hint';n.style.color='var(--text)';n.textContent=msg;stage.prepend(n);
+}
+function renderDealing(){
+  stage.classList.remove('right','wrong','waiting');
+  stage.innerHTML=`<div class="hud"><span id="auto-round">Round ${S.ri+1} / ${S.rounds.length}</span><span>${num(S.interval)} s/card · <button class="linkbtn" id="auto-stop">Stop</button></span></div>
+    <div class="auto-slot" id="auto-card"><div class="ghostcard">Shuffle up</div></div>
+    <p class="hint" id="auto-hint">Count every card. Check ${Math.min(S.checkNo+1,S.checks.size)} of ${S.checks.size} comes at a round break.</p>`;
+  document.getElementById('auto-stop').onclick=()=>abortAuto('Round stopped. Nothing was saved.');
+}
+function dealNext(){
+  if(!S||!S.auto)return;
+  const round=S.rounds[S.ri];
+  const c=round[S.ci];
+  S.rc+=val(c.r);S.ci++;
+  const slot=document.getElementById('auto-card');if(slot)slot.innerHTML=cardHTML(c);
+  const lab=document.getElementById('auto-round');if(lab)lab.textContent=`Round ${S.ri+1} / ${S.rounds.length}`;
+  if(S.ci<round.length){S.timer=setTimeout(dealNext,S.interval*1000);return}
+  S.timer=setTimeout(endOfRound,S.interval*1000);
+}
+function endOfRound(){
+  if(!S||!S.auto)return;
+  if(S.checks.has(S.ri))return askCount();
+  nextRound();
+}
+function nextRound(){
+  if(!S||!S.auto)return;
+  S.ri++;S.ci=0;
+  if(S.ri>=S.rounds.length)return finishAuto();
+  if(!document.getElementById('auto-card'))renderDealing();
+  const slot=document.getElementById('auto-card');
+  slot.innerHTML=`<div class="ghostcard">Next round</div>`;
+  document.getElementById('auto-round').textContent=`Round ${S.ri+1} / ${S.rounds.length}`;
+  document.getElementById('auto-hint').textContent=`Count every card. Check ${Math.min(S.checkNo+1,S.checks.size)} of ${S.checks.size} comes at a round break.`;
+  S.timer=setTimeout(dealNext,gapSecs()*1000);
+}
+function askCount(){
+  S.phase='ask';S.entry='';S.neg=false;
+  const n=S.checkNo+1;
+  stage.classList.remove('right','wrong','waiting');
+  stage.innerHTML=`<div class="hud"><span>Check ${n} of ${S.checks.size}</span><span>after round ${S.ri+1} · ${S.rounds.reduce((a,r,i)=>i<=S.ri?a+r.length:a,0)} cards</span></div>
+    <p class="lead">Running count?</p>
+    <div class="num" id="kp-val" aria-live="polite">0</div>
+    <div class="verdict" id="verdict"></div>
+    <div class="keypad" id="keypad">${['1','2','3','4','5','6','7','8','9','±','0','⌫'].map(k=>`<button class="btn ghost" data-k="${k}" aria-label="${k==='±'?'Change sign':k==='⌫'?'Delete':k}">${k}</button>`).join('')}</div>
+    <button class="btn" id="kp-ok">Check</button>`;
+  stage.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>keyIn(b.dataset.k));
+  document.getElementById('kp-ok').onclick=submitCount;
+}
+function entryValue(){const v=parseInt(S.entry||'0',10);return S.neg?-v:v}
+function keyIn(k){
+  if(!S||S.phase!=='ask')return;
+  if(k==='±')S.neg=!S.neg;
+  else if(k==='⌫')S.entry=S.entry.slice(0,-1);
+  else if(S.entry.length<2)S.entry=(S.entry==='0'?'':S.entry)+k;
+  document.getElementById('kp-val').textContent=S.entry?fmt(entryValue()):(S.neg?'−':'0');
+}
+function submitCount(){
+  if(!S||S.phase!=='ask')return;
+  const you=entryValue(),ok=you===S.rc;
+  S.checkNo++;
+  if(ok)S.right++;else S.missed.push({after:S.ri+1,truth:S.rc,you});
+  stage.classList.add(ok?'right':'wrong');
+  const last=S.ri>=S.rounds.length-1;
+  if(ok){
+    S.phase='resume';
+    document.getElementById('verdict').innerHTML=`<span style="color:var(--good)">Correct.</span> ${last?'':'Dealing resumes…'}`;
+    S.timer=setTimeout(()=>{if(!S)return;if(last)return finishAuto();S.phase='deal';renderDealing();nextRound()},last?600:900);
+    return;
+  }
+  S.phase='waiting';
+  stage.classList.add('waiting');
+  document.getElementById('verdict').innerHTML=`<b>It's ${fmt(S.rc)}.</b> ${last?'':`Carry on from ${fmt(S.rc)}.`}<span class="tap-hint">Tap anywhere to continue</span>`;
+  stage.focus();
+}
+function resumeAfterMiss(){
+  if(!S||S.phase!=='waiting')return;
+  const last=S.ri>=S.rounds.length-1;
+  if(last)return finishAuto();
+  S.phase='deal';renderDealing();nextRound();
+}
+async function finishAuto(){
+  stopAuto();
+  stage.classList.remove('right','wrong','waiting');
+  const all=S.right===S.checkNo;
+  const key=scoreOf(all,S.interval,'auto');
+  const sc=SCORE[key],L=LIMITS.auto;
+  const miss=S.missed.map(m=>`<span>After round ${m.after}: ${fmt(m.truth)} (you: ${fmt(m.you)})</span>`).join('');
+  stage.innerHTML=`<div class="badge" style="background:${sc.c};--glow:${sc.c}"></div>
+    <p class="lead">${sc.label}</p>
+    <dl class="stats">
+      <div><dt>Checks</dt><dd>${S.right}/${S.checkNo}</dd></div>
+      <div><dt>Speed</dt><dd>${num(S.interval)} s</dd></div>
+      <div><dt>Cards</dt><dd>${S.total}</dd></div>
+    </dl>
+    ${miss?`<p class="missed">${miss}</p>`:''}
+    <p class="hint">Casino-ready: every check right at ${num(L.fast)} s per card or faster. Workable up to ${num(L.ok)} s.</p>
+    <div class="row"><button class="btn" id="again">Again</button></div>`;
+  document.getElementById('again').onclick=start;
+  const rec={ts:Date.now(),mode:'auto',score:key,time:+(S.total*S.interval).toFixed(2),total:S.total,interval:S.interval,players:S.players,checks:S.checkNo,right:S.right,correct:all};
+  S=null;
+  results.push(await Store.add(rec));
+  renderHist();
+}
+stage.addEventListener('click',e=>{if(S&&S.auto&&S.phase==='waiting'&&!e.target.closest('button'))resumeAfterMiss()});
+document.addEventListener('keydown',e=>{
+  if(!S||!S.auto||document.getElementById('view-train').hidden||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(S.phase==='waiting'&&['Enter',' ','ArrowRight'].includes(e.key)){e.preventDefault();resumeAfterMiss();return}
+  if(S.phase!=='ask')return;
+  if(/^[0-9]$/.test(e.key)){e.preventDefault();keyIn(e.key)}
+  else if(e.key==='-'||e.key==='+'){e.preventDefault();keyIn('±')}
+  else if(e.key==='Backspace'){e.preventDefault();keyIn('⌫')}
+  else if(e.key==='Enter'){e.preventDefault();submitCount()}
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&S&&S.auto&&(S.phase==='deal'))abortAuto('The round stopped because the page went into the background. Nothing was saved.')});
+
+/* Level 4 settings (speed and players), shown on the Settings view */
+function renderPace(status){
+  const f=document.getElementById('pace-form');if(!f)return;
+  const isCustom=presetName(PACE.interval)==='Custom';
+  f.innerHTML=`<legend>Level 4 · Dealer pace</legend>
+    <div class="pace-row"><span class="t">Speed</span><div class="chips">${PACE_PRESETS.map(([n,v])=>`<button type="button" class="chip" data-pace="${v}" aria-pressed="${Math.abs(PACE.interval-v)<1e-9}">${n} ${num(v)} s</button>`).join('')}</div></div>
+    <div class="lim-row" style="grid-template-columns:minmax(0,1fr) auto"><label for="pace-custom">Own speed</label><span class="field"><input id="pace-custom" inputmode="decimal" autocomplete="off" value="${isCustom?num(PACE.interval):''}" placeholder="${num(PACE.interval)}"> s/card</span></div>
+    <div class="pace-row"><span class="t">Players</span><div class="chips">${[1,2,3,4,5,6,7].map(p=>`<button type="button" class="chip" data-players="${p}" aria-pressed="${PACE.players===p}">${p}</button>`).join('')}</div></div>
+    <span class="preset">Casino speed is about 0.7 s per card for a practised dealer. More players means longer bursts of cards per round. Preset: Casino 0.7 s, 3 players.</span>
+    <p class="error" id="pace-err" role="alert"></p>
+    <p class="hint" role="status">${status||''}</p>`;
+  const save=async(msg)=>{await Store.set('pace',PACE);renderPace(msg)};
+  f.querySelectorAll('[data-pace]').forEach(b=>b.onclick=()=>{PACE.interval=+b.dataset.pace;save(`Speed set to ${num(PACE.interval)} s per card.`)});
+  f.querySelectorAll('[data-players]').forEach(b=>b.onclick=()=>{PACE.players=+b.dataset.players;save(`Players set to ${PACE.players}.`)});
+  const inp=document.getElementById('pace-custom');
+  const commit=()=>{
+    if(!inp.value.trim())return;
+    const v=parseFloat(inp.value.replace(',','.'));
+    if(!(v>=0.2&&v<=3)){inp.setAttribute('aria-invalid','true');document.getElementById('pace-err').textContent='Enter a speed between 0.2 and 3 seconds per card.';return}
+    PACE.interval=+v.toFixed(2);save(`Speed set to ${num(PACE.interval)} s per card.`);
+  };
+  inp.onchange=commit;
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();commit()}};
 }
 
 function renderHist(){
@@ -421,7 +627,7 @@ function renderStats(){
   renderResults();
 }
 let filter='all';
-const FILTERS=[['all','All'],['single','L1'],['pairs','L2'],['flash','L3']];
+const FILTERS=[['all','All'],['single','L1'],['pairs','L2'],['flash','L3'],['auto','L4']];
 function chipsHTML(){return FILTERS.map(([k,l])=>`<button class="chip" data-f="${k}" aria-pressed="${filter===k}">${l}</button>`).join('')}
 function bindChips(id,rerender){
   const el=document.getElementById(id);el.innerHTML=chipsHTML();
@@ -451,7 +657,7 @@ function renderResults(){
       return `<li><i class="dot" style="background:${s.c}" title="${s.label}"></i>
         <span class="what">${s.label} · ${LEVEL[r.mode]}</span>
         <span class="num2">${r.time.toFixed(1)} s<small>${metric(r).toFixed(2)} s/${UNIT[r.mode]}</small></span>
-        <span class="when">${dtf.format(r.ts)} · ${r.total} cards · ${r.mode==='flash'?`${r.guess}/${r.truth} hands right`:`guessed ${fmt(r.guess)}, was ${fmt(r.truth)}`}</span></li>`}).join('')}</ul>
+        <span class="when">${dtf.format(r.ts)} · ${r.total} cards · ${r.mode==='flash'?`${r.guess}/${r.truth} hands right`:r.mode==='auto'?`${r.right}/${r.checks} checks right · ${r.players} player${r.players>1?'s':''}`:`guessed ${fmt(r.guess)}, was ${fmt(r.truth)}`}</span></li>`}).join('')}</ul>
     <div class="row">${recent.length>shown?`<button class="btn ghost small" id="more">Show ${Math.min(50,recent.length-shown)} more</button>`:''}
       <button class="btn danger small" id="clear">Delete all results</button></div>`;
   const more=document.getElementById('more');if(more)more.onclick=()=>{shown+=50;renderResults()};
@@ -510,7 +716,7 @@ function renderLimits(status){
       <div class="lim-row"><i class="dot" style="background:var(--good)"></i><label for="lim-${m}-fast">Casino-ready up to</label><span class="field"><input id="lim-${m}-fast" inputmode="decimal" autocomplete="off" value="${num(L.fast)}"> s/${u}</span></div>
       <div class="lim-row"><i class="dot" style="background:var(--ok)"></i><label for="lim-${m}-ok">Workable up to</label><span class="field"><input id="lim-${m}-ok" inputmode="decimal" autocomplete="off" value="${num(L.ok)}"> s/${u}</span></div>
       <div class="lim-row muted"><i class="dot" style="background:var(--slow)"></i><span class="t">Too slow above that</span><span></span></div>
-      <span class="preset">Preset: ${num(D.fast)} / ${num(D.ok)} s per ${u}</span>
+      <span class="preset">Preset: ${num(D.fast)} / ${num(D.ok)} s per ${u}${m==='auto'?'. Level 4 is rated by the dealing speed you choose, not by your reaction time.':''}</span>
     </fieldset>`}).join('')+
     `<p class="error" id="lim-err" role="alert"></p>
     <div class="row left"><button class="btn" type="button" id="lim-save">Save limits</button><button class="btn ghost" type="button" id="lim-reset">Reset to presets</button></div>
@@ -543,20 +749,21 @@ function renderLimits(status){
 }
 
 /* ---------- Routing ----------
-   #level1 #level2 #level3 → that level, #stats, #settings.
+   #level1 … #level4 → that level, #stats, #settings.
    Old links keep working: #train, #results, #progress, #limits. */
-const LEVEL_HASH={single:'level1',pairs:'level2',flash:'level3'};
-const ALIAS={train:'train',level1:'train',level2:'train',level3:'train',stats:'stats',results:'stats',progress:'stats',settings:'settings',limits:'settings'};
+const LEVEL_HASH={single:'level1',pairs:'level2',flash:'level3',auto:'level4'};
+const ALIAS={train:'train',level1:'train',level2:'train',level3:'train',level4:'train',stats:'stats',results:'stats',progress:'stats',settings:'settings',limits:'settings'};
 let current='train';
 function readHash(){try{const h=location.hash.slice(1);if(!ALIAS[h])return null;return {view:ALIAS[h],mode:MODES.find(k=>LEVEL_HASH[k]===h)||null}}catch(e){return null}}
 function setHash(h){try{history.replaceState(null,'','#'+h)}catch(e){}}
 function show_(v){
+  if(v!=='train'&&S&&S.auto){stopAuto();S=null;intro()}
   current=v;
   ['train','stats','settings'].forEach(k=>document.getElementById('view-'+k).hidden=k!==v);
   MODES.forEach(k=>document.getElementById('tab-'+k).setAttribute('aria-selected',v==='train'&&k===mode));
   ['stats','settings'].forEach(k=>{const b=document.getElementById('nav-'+k);if(k===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   if(v==='stats'){shown=50;renderStats()}
-  if(v==='settings')renderLimits();
+  if(v==='settings'){renderPace();renderLimits()}
 }
 function openView(v){if(v===current)return;setHash(v);show_(v)}
 function route(){const r=readHash();if(!r)return;if(r.mode&&r.mode!==mode){setMode(r.mode);return}show_(r.view)}
@@ -570,7 +777,11 @@ document.getElementById('nav-settings').onclick=()=>openView('settings');
   renderHist();intro();show_(r?r.view:'train');
   await Store.open();
   const saved=await Store.get('limits');
-  if(validLimits(saved))LIMITS=saved;
+  LIMITS=clone(DEFAULT_LIMITS);
+  if(saved)for(const m of MODES){const v=saved[m];if(v&&isFinite(v.fast)&&isFinite(v.ok)&&v.fast>0&&v.ok>v.fast)LIMITS[m]=v}
+  const pace=await Store.get('pace');
+  if(pace&&pace.interval>=0.2&&pace.interval<=3&&pace.players>=1&&pace.players<=7)PACE=pace;
+  if(mode==='auto'&&!S)intro();
   results=(await Store.all()).sort((a,b)=>a.id-b.id);
   renderHist();
   if(current!=='train')show_(current);

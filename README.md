@@ -8,7 +8,7 @@ The top bar has one entry per trainer: **Counting** (`index.html`), **Strategy**
 
 | Trainer | Drills | Stats | Settings |
 |---|---|---|---|
-| Counting | Level 1 · 2 · 3 (`#level1`–`#level3`) | chart + rounds (`#stats`) | speed limits (`#settings`) |
+| Counting | Level 1 · 2 · 3 · 4 (`#level1`–`#level4`) | chart + rounds (`#stats`) | dealer pace, speed limits (`#settings`) |
 | Strategy | Drill · Chart | chart, most-missed hands, rounds | table rules + speed limits |
 | True count | Decks · Divide · Combined | chart per drill, rounds | shoe, rounding, deck marks, speed limits |
 
@@ -29,6 +29,7 @@ Old links (`#train`, `#results`, `#progress`, `#limits`, `#rules`) still work.
 1. **Last card** – 51 cards are dealt one at a time. Name the Hi-Lo value of the missing card.
 2. **Pairs** – cards come two at a time until the dealer stops somewhere in the deck. Enter your running count.
 3. **Flash** – 20 hands of 3 or 4 cards. Tap their combined value as fast as you can. Trains reading cards in groups instead of one by one.
+4. **Dealer pace** – about two decks from a 6-deck shoe, dealt automatically at a fixed speed (Slow 1.0 s, Casino 0.7 s, Fast 0.5 s per card, or your own). Cards come in rounds sized for 1–7 players plus the dealer, with a short pause between rounds. Up to four times at a round break the dealer stops and asks for your running count; after a wrong answer you carry on from the correct count. You can't slow it down: there's only Stop, and the round also stops when the page goes into the background.
 
 ## Scoring
 
@@ -39,6 +40,9 @@ Any wrong answer is **Miscounted** (red). Correct rounds are rated by speed. Pre
 | 1 · Last card | ≤ 0.5 s per card (≈ 25 s per deck) | ≤ 0.8 s per card | slower |
 | 2 · Pairs | ≤ 0.4 s per card | ≤ 0.65 s per card | slower |
 | 3 · Flash | ≤ 1.5 s per hand | ≤ 2.5 s per hand | slower |
+| 4 · Dealer pace | dealt at ≤ 0.7 s per card | ≤ 1.0 s per card | slower |
+
+Level 4 is rated by the dealing speed you choose, not your reaction time; any wrong check makes the round Miscounted.
 
 The limits can be changed per level under Settings and reset to these presets.
 
