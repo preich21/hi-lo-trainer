@@ -40,6 +40,9 @@ h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.09em;color:var(--mut
 
 .nav{display:flex;gap:16px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
 .nav a{color:var(--muted);text-decoration:none;font-weight:500;font-size:.95rem;padding:6px 0 10px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.nav.more-r{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent)}
+.nav.more-l{-webkit-mask-image:linear-gradient(to right,transparent,#000 32px);mask-image:linear-gradient(to right,transparent,#000 32px)}
+.nav.more-l.more-r{-webkit-mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent)}
 .nav a[aria-current="page"]{color:var(--text);border-color:var(--brass)}
 .nav a:focus-visible{outline:2px solid var(--brass);outline-offset:3px;border-radius:2px}
 
@@ -197,6 +200,7 @@ html.locked{overflow:hidden}
     <a href="index.html#progress">Progress</a>
     <a href="index.html#limits">Limits</a>
     <a href="strategy.html" aria-current="page">Strategy</a>
+    <a href="truecount.html">True count</a>
   </nav>
 
   <div class="tabs" role="tablist">
@@ -798,6 +802,13 @@ window.addEventListener('hashchange',()=>show_(hashView()||'drill'));
   renderHist();
   if(!D)show_(current);
 })();
+</script>
+<script>
+(function(){const n=document.querySelector('.nav');if(!n)return;
+const upd=()=>{n.classList.toggle('more-r',n.scrollLeft+n.clientWidth<n.scrollWidth-2);n.classList.toggle('more-l',n.scrollLeft>2)};
+n.addEventListener('scroll',upd,{passive:true});addEventListener('resize',upd);
+const a=n.querySelector('[aria-current="page"]');if(a){const d=a.getBoundingClientRect().right-n.getBoundingClientRect().right;if(d>0)n.scrollLeft+=d+24}
+upd();})();
 </script>
 </body>
 </html>

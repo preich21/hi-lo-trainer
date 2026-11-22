@@ -39,6 +39,7 @@ Rounds and limits are saved in your browser (IndexedDB), so they survive closing
 - **Progress** (`#progress`) – chart of up to your last 500 rounds, colour-coded, with a 10-round average and the limit lines of the selected level.
 - **Limits** (`#limits`) – set your own limits per level.
 - **Strategy** (`strategy.html`) – basic strategy trainer, see below.
+- **True count** (`truecount.html`) – true count trainer, see below.
 
 ## Basic strategy trainer
 
@@ -53,6 +54,16 @@ The expected results are calculated in the page with an infinite-deck model for 
 The strategy is the standard 4–8 deck chart (Wizard of Odds) with the usual adjustments for H17, no double after split and no surrender, and the European no-hole-card changes: hit 11 vs 10, hit 8,8 vs 10/A, hit A,A vs A. Default rules: no hole card, dealer stands on soft 17, double after split, no surrender.
 
 The page stores its data in its own IndexedDB database, separate from the counting results.
+
+## True count trainer
+
+`truecount.html` trains converting the running count into the true count (running count ÷ decks left). Three drills of 20 questions:
+
+- **Decks** – a to-scale discard tray of a 6- or 8-deck shoe. Tap how many decks are left, to the nearest half deck.
+- **Divide** – running count and decks left as numbers. Enter the true count.
+- **Combined** – running count plus the tray: estimate and divide in one step.
+
+After a wrong answer the tray shows deck marks and the calculation (e.g. `+7 ÷ 2.5 = +2.8 → +3`). Settings: shoe size, rounding (nearest or round down; ambiguous .5 cases are never asked), optional deck marks as a beginner aid, and speed limits per drill (presets 2 / 4 s for Decks and Divide, 3 / 5 s for Combined). Rated Casino-ready, Workable, Too slow, or Misjudged / Miscalculated. Data is stored in its own IndexedDB database.
 
 ## Run locally
 

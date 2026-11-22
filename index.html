@@ -38,6 +38,9 @@ h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
 
 .nav{display:flex;gap:16px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
 .nav a{color:var(--muted);text-decoration:none;font-weight:500;font-size:.95rem;padding:6px 0 10px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.nav.more-r{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent)}
+.nav.more-l{-webkit-mask-image:linear-gradient(to right,transparent,#000 32px);mask-image:linear-gradient(to right,transparent,#000 32px)}
+.nav.more-l.more-r{-webkit-mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent)}
 .nav a[aria-current="page"]{color:var(--text);border-color:var(--brass)}
 .nav a:focus-visible{outline:2px solid var(--brass);outline-offset:3px;border-radius:2px}
 
@@ -154,6 +157,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
     <a href="#progress" id="nav-progress">Progress</a>
     <a href="#limits" id="nav-limits">Limits</a>
     <a href="strategy.html" id="nav-strategy">Strategy</a>
+    <a href="truecount.html" id="nav-truecount">True count</a>
   </nav>
 
   <section class="view" id="view-train">
@@ -560,6 +564,13 @@ VIEWS.forEach(k=>document.getElementById('nav-'+k).addEventListener('click',e=>{
   results=(await Store.all()).sort((a,b)=>a.id-b.id);
   renderHist();route();
 })();
+</script>
+<script>
+(function(){const n=document.querySelector('.nav');if(!n)return;
+const upd=()=>{n.classList.toggle('more-r',n.scrollLeft+n.clientWidth<n.scrollWidth-2);n.classList.toggle('more-l',n.scrollLeft>2)};
+n.addEventListener('scroll',upd,{passive:true});addEventListener('resize',upd);
+const a=n.querySelector('[aria-current="page"]');if(a){const d=a.getBoundingClientRect().right-n.getBoundingClientRect().right;if(d>0)n.scrollLeft+=d+24}
+upd();})();
 </script>
 </body>
 </html>
