@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b2a21">
+<meta name="description" content="Play a full blackjack shoe: bet, play your hand and keep the count, with a coach.">
+<title>Full Play · Hi-Lo Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: same felt table as the other trainers — header + site nav, Play + Stats/Settings icons. The table sits in one felt box with your hand and actions below it. */
+:root{
+  --felt:#123b2f; --felt-deep:#0b2a21; --rail:#1c4e3f;
+  --ivory:#f6f1e4; --ink:#1a1f1c; --red:#b3262e;
+  --text:#e9efe9; --muted:#9fb8ad; --line:rgba(216,180,90,.28); --brass:#d8b45a;
+  --good:#3fbf6f; --ok:#e8c547; --slow:#ec8a3a; --bad:#e2484f;
+  --edge:#efe8d6; --edge-line:rgba(60,48,30,.22); --acrylic:rgba(233,239,233,.06); --acrylic-line:rgba(233,239,233,.32);
+  --f-display:"DM Serif Display",Georgia,serif;
+  --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(120% 80% at 50% 30%,var(--felt) 0%,var(--felt-deep) 100%) fixed,var(--felt-deep);color:var(--text);font-family:var(--f-body);font-size:14px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation}
+[hidden]{display:none!important}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px;min-height:100%}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-weight:400;font-size:1.7rem;margin:0;letter-spacing:.01em}
+h1 span{color:var(--brass)}
+h3{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600;margin:0}
+.sub{font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
+
+.nav{display:flex;gap:16px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.nav a{color:var(--muted);text-decoration:none;font-weight:500;font-size:.95rem;padding:6px 0 10px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.nav.more-r{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent)}
+.nav.more-l{-webkit-mask-image:linear-gradient(to right,transparent,#000 32px);mask-image:linear-gradient(to right,transparent,#000 32px)}
+.nav.more-l.more-r{-webkit-mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent)}
+.subnav{display:flex;gap:6px;align-items:stretch}
+.subnav .tabs{flex:1;min-width:0}
+.iconbtn{appearance:none;border:0;background:rgba(0,0,0,.22);color:var(--muted);width:52px;flex:none;border-radius:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:500 .66rem var(--f-body);padding:6px 0}
+.iconbtn svg{width:19px;height:19px}
+.iconbtn[aria-current="page"]{background:var(--rail);color:var(--text)}
+.iconbtn:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+@media (hover:hover){.iconbtn:hover{color:var(--text)}}
+.sec{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600;margin:6px 0 0}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.toolbar h2{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{appearance:none;border:1px solid var(--line);background:transparent;color:var(--muted);font:500 .8rem var(--f-body);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--rail);color:var(--text);border-color:var(--rail)}
+.chip:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.mix{display:flex;height:10px;border-radius:5px;overflow:hidden;background:rgba(0,0,0,.25)}
+.mix i{display:block;height:100%}
+.counts{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.counts span{display:flex;align-items:center;gap:6px}
+.counts b{color:var(--text);font-family:var(--f-mono);font-weight:500}
+.list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.list li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:11px 2px;border-bottom:1px solid rgba(216,180,90,.12)}
+.list .dot{grid-row:span 2}
+.list .what{font-weight:500}
+.list .when{color:var(--muted);font-size:.78rem;grid-column:2}
+.list .num2{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right;grid-row:span 2;font-size:.95rem}
+.list .num2 small{display:block;color:var(--muted);font-size:.72rem}
+.empty{border:1px dashed var(--line);border-radius:16px;padding:28px 18px;text-align:center;color:var(--muted);line-height:1.5}
+.empty strong{display:block;color:var(--text);font-family:var(--f-display);font-weight:400;font-size:1.2rem;margin-bottom:4px}
+.chartbox{border:1px solid var(--line);border-radius:18px;padding:12px 8px 6px;background:rgba(0,0,0,.14)}
+.chartbox svg{display:block;width:100%;height:auto;max-width:100%}
+.cax{fill:var(--muted);font:13px var(--f-mono)}
+.cgrid{stroke:rgba(159,184,173,.14);stroke-width:1}
+.thr{stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+.avg{stroke:var(--text);stroke-width:1.6;fill:none;opacity:.75}
+.note .k{display:inline-block;width:18px;height:0;border-top:2px solid var(--text);opacity:.75;vertical-align:middle;margin-right:4px}
+.stats-wrap{display:flex;flex-direction:column;gap:12px}
+.nav a[aria-current="page"]{color:var(--text);border-color:var(--brass)}
+.nav a:focus-visible{outline:2px solid var(--brass);outline-offset:3px;border-radius:2px}
+
+.view{display:flex;flex-direction:column;gap:14px;flex:1}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:rgba(0,0,0,.22);padding:4px;border-radius:12px}
+.tab{appearance:none;border:0;background:transparent;color:var(--muted);font:500 .88rem var(--f-body);padding:10px 4px;border-radius:9px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--rail);color:var(--text)}
+.tab:focus-visible,.btn:focus-visible,.seg button:focus-visible,.stage:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+.stage{flex:1;min-height:360px;border:1px solid var(--line);border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px 14px 18px;text-align:center;position:relative;user-select:none;transition:border-color .15s}
+.stage.right{border-color:var(--good)}
+.stage.wrong{border-color:var(--bad)}
+.stage.waiting{cursor:pointer}
+.stage.waiting .pad{pointer-events:none;opacity:.35}
+.hud{position:absolute;top:12px;left:16px;right:16px;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+.given{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.given div{background:rgba(0,0,0,.22);border-radius:12px;padding:10px 16px;min-width:120px}
+.given dt{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.given dd{margin:4px 0 0;font:500 2rem var(--f-mono);font-variant-numeric:tabular-nums}
+.given dl{margin:0}
+.scene{display:flex;align-items:flex-end;gap:14px;justify-content:center}
+.tray svg{display:block;height:auto;max-width:100%}
+.tray-cap{font-size:.72rem;color:var(--muted);margin-top:4px}
+.ax{fill:var(--muted);font:10px var(--f-mono)}
+.q{font-family:var(--f-display);font-size:1.25rem;margin:0;text-wrap:balance}
+.pad{display:grid;gap:6px;width:100%;max-width:360px}
+.pad.tc{grid-template-columns:repeat(7,1fr)}
+.pad.dk{grid-template-columns:repeat(5,1fr)}
+.pad .btn{font-family:var(--f-mono);font-size:1.05rem;padding:12px 0;border-radius:10px}
+.verdict{min-height:2.6em;margin:0;font-size:.92rem;line-height:1.45;color:var(--muted)}
+.verdict b{color:var(--bad);font-weight:600}
+.verdict code{font-family:var(--f-mono);color:var(--text)}
+.tap-hint{display:block;margin-top:4px;font-size:.78rem;color:var(--muted)}
+
+.hint{color:var(--muted);font-size:.85rem;margin:0}
+.lead{font-family:var(--f-display);font-size:1.45rem;margin:0;text-wrap:balance}
+.copy{color:var(--muted);font-size:.92rem;line-height:1.5;max-width:36ch;margin:0}
+.btn{appearance:none;border:0;border-radius:12px;font:600 1rem var(--f-body);padding:14px 20px;cursor:pointer;background:var(--brass);color:#2a2008}
+.btn.ghost{background:rgba(255,255,255,.08);color:var(--text)}
+.btn.small{font-size:.85rem;padding:9px 14px;border-radius:10px}
+.btn.danger{background:rgba(226,72,79,.16);color:#ffb3b6}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.row.left{justify-content:flex-start}
+.badge{width:92px;height:92px;border-radius:50%;box-shadow:0 0 0 6px rgba(255,255,255,.06),0 0 40px var(--glow,transparent)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:360px;margin:0}
+.stats div{background:rgba(0,0,0,.2);border-radius:10px;padding:10px 6px}
+.stats dt{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.stats dd{margin:4px 0 0;font-family:var(--f-mono);font-size:1.1rem;font-variant-numeric:tabular-nums}
+.missed{display:flex;flex-direction:column;gap:4px;font-family:var(--f-mono);font-size:.82rem;color:var(--muted);margin:0}
+.history{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.75rem;color:var(--muted);min-height:18px}
+.dot{width:12px;height:12px;border-radius:50%;flex:none;display:inline-block}
+.scale{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:.72rem;color:var(--muted)}
+.scale span{display:flex;align-items:center;gap:5px}
+.scale .dot{width:9px;height:9px}
+.setline{font-size:.8rem;color:var(--muted);margin:0;line-height:1.5}
+.setline a{color:var(--brass)}
+
+/* Settings */
+.about{display:flex;flex-direction:column;gap:10px;color:var(--muted);font-size:.9rem;line-height:1.55;max-width:62ch}
+.about p{margin:0}.about b{color:var(--text);font-weight:500}
+.box{border:1px solid var(--line);border-radius:16px;padding:12px 14px 14px;margin:0;display:flex;flex-direction:column;gap:12px;min-width:0}
+.box legend{padding:0 6px;margin-left:-6px;font-weight:600;font-size:.95rem}
+.rule{display:flex;flex-direction:column;gap:6px}
+.rule .lbl{font-size:.9rem}
+.rule small{color:var(--muted);font-size:.76rem;line-height:1.4}
+.seg{display:inline-flex;background:rgba(0,0,0,.25);border-radius:10px;padding:3px;gap:3px;flex-wrap:wrap;align-self:flex-start}
+.seg button{appearance:none;border:0;background:transparent;color:var(--muted);font:500 .85rem var(--f-body);padding:8px 12px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--rail);color:var(--text)}
+.lim-grid{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px 10px;align-items:center}
+.lim-grid .h{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:flex;align-items:center;gap:6px}
+.lim-grid label{font-size:.9rem}
+.field{display:flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:.82rem;color:var(--muted)}
+.field input{width:6ch;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:8px;color:var(--text);font:500 1rem var(--f-mono);padding:8px;text-align:right}
+.field input:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+.field input[aria-invalid="true"]{border-color:var(--bad)}
+.preset{font-size:.75rem;color:var(--muted)}
+.error{color:#ffb3b6;font-size:.88rem;margin:0}
+.note{color:var(--muted);font-size:.82rem;line-height:1.5;margin:0}
+/* Table page */
+.playbox{border:1px solid var(--line);border-radius:22px;padding:12px 12px 16px;display:flex;flex-direction:column;gap:12px;position:relative}
+.pbar{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--f-mono);font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.pbar b{color:var(--text);font-weight:500}
+.you{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;align-items:center;gap:10px;min-height:150px}
+.you .tbl-hands{--mcw:54px;--mch:76px;--mco:26px;--mcf:1.05rem;min-height:76px}
+.you h3{margin:0}
+.acts{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;width:100%;max-width:380px}
+.acts .btn{grid-column:span 2;padding:13px 2px;font-size:.95rem}
+.acts .btn.wide{grid-column:span 3}
+.acts kbd{display:none}
+@media (hover:hover) and (pointer:fine){.acts kbd{display:inline;font:500 .68rem var(--f-mono);color:var(--muted);margin-left:4px}}
+.btn:disabled{opacity:.3;cursor:default}
+.coach{width:100%;max-width:420px;font-size:.88rem;line-height:1.45;border-left:3px solid var(--line);padding:4px 0 4px 10px;color:var(--muted);min-height:1.5em}
+.coach:empty{display:none}
+.coach.ok{border-color:var(--good)}
+.coach.bad{border-color:var(--bad);color:var(--text)}
+.coach.info{border-color:var(--brass)}
+.coach b{color:var(--text)}
+.coach .why{all:unset;cursor:pointer;color:var(--brass);text-decoration:underline;text-underline-offset:2px;margin-left:4px}
+.betrow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.betrow .chip{min-width:44px;font-family:var(--f-mono);font-size:.95rem;padding:8px 10px}
+.bigval{font:500 2rem var(--f-mono);font-variant-numeric:tabular-nums}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:260px}
+.keypad .btn{font-family:var(--f-mono);font-size:1.2rem;padding:12px 0}
+.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%;max-width:380px;margin:0}
+.summary div{background:rgba(0,0,0,.2);border-radius:10px;padding:10px 8px;text-align:center}
+.summary dt{font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.summary dd{margin:4px 0 0;font:500 1.05rem var(--f-mono);font-variant-numeric:tabular-nums}
+.lead{font-family:var(--f-display);font-size:1.3rem;margin:0;text-align:center;text-wrap:balance}
+.copy{color:var(--muted);font-size:.9rem;line-height:1.5;max-width:40ch;margin:0;text-align:center}
+.mtag{display:inline-block;font:600 .72rem var(--f-mono);padding:2px 7px;border-radius:5px;margin-left:6px;vertical-align:1px}
+.linkish{all:unset;cursor:pointer;color:var(--text);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.num-in{width:7ch;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:8px;color:var(--text);font:500 1rem var(--f-mono);padding:8px;text-align:right}
+.num-in[aria-invalid="true"]{border-color:var(--bad)}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.setrow .lbl{font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Hi<span>·</span>Lo Trainer</h1>
+    <span class="sub">Full play</span>
+  </header>
+  <nav class="nav" aria-label="Trainers">
+    <a href="index.html">Counting</a>
+    <a href="strategy.html">Strategy</a>
+    <a href="truecount.html">True count</a>
+    <a href="table.html" aria-current="page">Table</a>
+  </nav>
+
+  <div class="subnav">
+    <div class="tabs" role="tablist" style="grid-template-columns:1fr">
+      <button class="tab" role="tab" id="tab-play" aria-selected="true">Play</button>
+    </div>
+    <button type="button" class="iconbtn" id="nav-stats" aria-label="Stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 20h18M6 20v-8M11 20V5M16 20v-5M21 20V9"/></svg>Stats</button>
+    <button type="button" class="iconbtn" id="nav-settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Settings</button>
+  </div>
+
+  <section class="view" id="view-play">
+    <div class="playbox" id="playbox">
+      <div class="pbar"><span id="pb-shoe">Shoe 1 · round 1</span><span>Bankroll <b id="pb-bank">200</b> u</span></div>
+      <div id="tablearea"></div>
+      <div class="you" id="you"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-stats" hidden>
+    <div class="toolbar"><h2>Stats</h2></div>
+    <div id="stats-body" class="stats-wrap"></div>
+  </section>
+
+  <section class="view" id="view-settings" hidden>
+    <div class="toolbar"><h2>Settings</h2></div>
+    <div class="about">
+      <p>Play a real shoe: you bet, play your hand, and keep the count while the other seats play perfect basic strategy. The coach tells you right away when a bet or a play differs from what a counter would do, and the dealer stops at some round breaks to check your running and true count.</p>
+    </div>
+    <fieldset class="box"><legend>Table</legend><div id="set-table" style="display:flex;flex-direction:column;gap:14px"></div></fieldset>
+    <fieldset class="box"><legend>Table rules</legend><p class="note">Shared with the Strategy page: a change here changes the chart there too.</p><div id="set-rules" style="display:flex;flex-direction:column;gap:14px"></div></fieldset>
+    <fieldset class="box"><legend>Coach</legend><div id="set-coach" style="display:flex;flex-direction:column;gap:14px"></div></fieldset>
+  </section>
+</div>
+
+<script src="strategy-core.js"></script>
+<script src="table.js"></script>
+<script>
+/* ---------- Settings ---------- */
+const num=v=>String(+(+v).toFixed(2));
+const fmt=v=>v>0?'+'+v:v<0?'−'+Math.abs(v):'0';
+const fmtU=v=>(v>0?'+':v<0?'−':'')+num(Math.abs(v));
+const DEFAULT_CFG={players:4,seat:2,decks:6,pen:0.75,speed:0.5,deviations:false,rounding:'nearest',startBank:200};
+let CFG={...DEFAULT_CFG};
+const SPEEDS=[['Slow',1],['Normal',0.5],['Fast',0.25]];
+const RAMP=tc=>tc<=1?1:tc===2?2:tc===3?4:tc===4?6:8;
+const roundTC=v=>CFG.rounding==='floor'?Math.floor(v+1e-9):Math.round(v);
+
+/* ---------- Storage: own database for shoes and mistakes, shared table rules from the Strategy page ---------- */
+function openDB(name,upgrade){return new Promise(res=>{try{const r=indexedDB.open(name,1);r.onupgradeneeded=()=>upgrade(r.result);r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);r.onblocked=()=>res(null)}catch(e){res(null)}})}
+function req(db,store,mode,fn,fallback){return new Promise(res=>{if(!db)return res(fallback);try{const q=fn(db.transaction(store,mode).objectStore(store));q.onsuccess=()=>res(q.result);q.onerror=()=>res(fallback)}catch(e){res(fallback)}})}
+const DB={own:null,strat:null};
+const Store={
+  async open(){
+    DB.own=await openDB('hilo-table',db=>{db.createObjectStore('shoes',{keyPath:'id',autoIncrement:true});db.createObjectStore('cells',{keyPath:'id'});db.createObjectStore('settings',{keyPath:'key'})});
+    DB.strat=await openDB('hilo-strategy',db=>{db.createObjectStore('rounds',{keyPath:'id',autoIncrement:true});db.createObjectStore('cells',{keyPath:'id'});db.createObjectStore('settings',{keyPath:'key'})});
+  },
+  async get(key){const r=await req(DB.own,'settings','readonly',s=>s.get(key),null);return r?r.value:null},
+  set(key,value){return req(DB.own,'settings','readwrite',s=>s.put({key,value}))},
+  async rules(){const r=await req(DB.strat,'settings','readonly',s=>s.get('rules'),null);return r?r.value:null},
+  setRules(v){return req(DB.strat,'settings','readwrite',s=>s.put({key:'rules',value:v}))},
+  shoes(){return req(DB.own,'shoes','readonly',s=>s.getAll(),[]).then(r=>r||[])},
+  async addShoe(rec){const id=await req(DB.own,'shoes','readwrite',s=>s.add(rec),null);if(id!=null)rec.id=id;return rec},
+  cells(){return req(DB.own,'cells','readonly',s=>s.getAll(),[]).then(r=>r||[])},
+  putCell(c){return req(DB.own,'cells','readwrite',s=>s.put(c))},
+  async clearHistory(){await req(DB.own,'shoes','readwrite',s=>s.clear());await req(DB.own,'cells','readwrite',s=>s.clear())}
+};
+let shoes=[],cells={},bankroll=DEFAULT_CFG.startBank;
+window.bsRecord=id=>cells[id];
+
+/* ---------- Game ---------- */
+const you=document.getElementById('you');
+let G=null;
+function newShoe(){
+  if(G&&G.pacer)G.pacer.kill();
+  const me=Math.min(CFG.seat,CFG.players)-1;
+  G={shoe:new TBL.Shoe(CFG.decks,CFG.pen),pacer:new TBL.Pacer(),rc:0,round:0,me,lastBet:G?G.lastBet:1,ask:null,panel:'bet',
+     st:{rounds:0,hands:0,net:0,dec:0,decWrong:0,bets:0,betsWrong:0,checks:0,checksRight:0},shoeNo:(G?G.shoeNo:0)+1,coach:null};
+  G.view=new TBL.View(document.getElementById('tablearea'),{seats:CFG.players,me,tray:true});
+  G.view.onUpdate=s=>{if(!s||s.i===G.me)renderYou()};
+  updateBar();updateTray();
+  shoeLoop(G).catch(e=>{if(!TBL.isAbort(e))console.error(e)});
+}
+const decksLeft=()=>G.shoe.left/52;
+const exactTC=()=>G.rc/decksLeft();
+const curTC=()=>roundTC(exactTC());
+function updateBar(){
+  document.getElementById('pb-shoe').textContent=`Shoe ${G.shoeNo} · round ${G.round+1}`;
+  document.getElementById('pb-bank').textContent=num(bankroll);
+}
+function updateTray(){G.view.setTray(TBL.trayHTML((G.shoe.dealt-onTable())/52,CFG.decks,{px:92,deckPx:CFG.decks===8?17:22,caption:'Discard tray'}))}
+function onTable(){if(!G.view.seats||G.cleared)return 0;return G.view.seats.reduce((a,s)=>a+s.hands.reduce((b,h)=>b+h.cards.length,0),0)+G.view.dealerM.cards.length+(G.view.dealerM.hole?1:0)}
+function setCoach(html,kind){G.coach={html,kind};const c=document.getElementById('coach');if(c){c.className='coach '+(kind||'');c.innerHTML=html;bindWhy(c)}}
+function bindWhy(root){root.querySelectorAll('[data-why]').forEach(b=>b.onclick=()=>{const [c,r,u]=b.dataset.why.split('|');openSheet(c,r,+u)})}
+function coachHTML(){return `<div class="coach ${G.coach?G.coach.kind||'':''}" id="coach" role="status">${G.coach?G.coach.html:''}</div>`}
+
+async function shoeLoop(g){
+  const p=g.pacer;
+  while(true){
+    const bet=await p.wait(res=>showBetting(res));
+    coachBet(bet);
+    g.lastBet=bet;
+    const seats=Array.from({length:CFG.players},(_,i)=>({human:i===g.me,bet:i===g.me?bet:1}));
+    g.cleared=false;
+    const bot=TBL.botDecide(RULES);
+    const r=await TBL.playRound({shoe:g.shoe,rules:RULES,interval:CFG.speed,pacer:p,view:g.view,seats,
+      decide:(si,hi,h,opt,ctx)=>si===g.me?humanDecide(hi,h,opt,ctx):bot(si,hi,h,opt,ctx),
+      insurance:(si,ctx)=>humanInsurance(ctx),
+      onCard:c=>{g.rc+=TBL.hilo(c.r);updateTray()}});
+    const mine=r.seats[g.me];
+    bankroll+=mine.net;g.st.net+=mine.net;g.st.rounds++;g.st.hands+=mine.hands.length;g.round++;
+    Store.set('bankroll',bankroll);
+    updateBar();
+    await p.wait(res=>showRoundEnd(mine,r,res));
+    g.cleared=true;g.view.clear();updateTray();g.coach=null;
+    if(g.shoe.pastCut()){await p.wait(res=>showShoeEnd(res));return}
+    if(g.round>=2&&Math.random()<0.2)await p.wait(res=>showCheck(res));
+  }
+}
+
+/* Betting */
+function showBetting(res){
+  G.ask=null;G.insAsk=null;G.panel='bet';G.keyIn=null;G.keyOk=null;
+  const chips=[1,2,4,6,8];
+  let bet=G.lastBet||1;
+  const draw=()=>{
+    you.innerHTML=`<h3>Your bet</h3>
+      <div class="betrow">${chips.map(c=>`<button class="chip" data-bet="${c}" aria-pressed="${c===bet}">${c}</button>`).join('')}</div>
+      <p class="hint">Units. The ramp: 1 unit up to true count +1, then 2 · 4 · 6 · 8 at +2 · +3 · +4 · +5 and higher.</p>
+      <button class="btn" id="deal">Deal · ${bet} unit${bet>1?'s':''}</button>
+      ${coachHTML()}`;
+    you.querySelectorAll('[data-bet]').forEach(b=>b.onclick=()=>{bet=+b.dataset.bet;draw()});
+    document.getElementById('deal').onclick=()=>{G.coach=null;G.panel='play';res(bet)};
+    bindWhy(you);
+  };
+  draw();
+}
+function coachBet(bet){
+  const tc=curTC(),want=RAMP(tc);
+  G.st.bets++;
+  if(bet===want)setCoach(`Bet ✓ The ramp says ${want} unit${want>1?'s':''} at true count ${fmt(tc)}.`,'ok');
+  else{G.st.betsWrong++;setCoach(`<b>Bet ${want} unit${want>1?'s':''}</b> at true count ${fmt(tc)} (running count ${fmt(G.rc)}, ${num(Math.round(decksLeft()*2)/2)} decks left). You bet ${bet}.`,'bad')}
+}
+
+/* Your hand and actions */
+function renderYou(){
+  if(!G||!G.view.seats||G.panel!=='play')return;
+  const s=G.view.seats[G.me];
+  const a=G.ask;
+  const can=k=>a&&(k==='H'||k==='S'||(k==='D'&&a.opt.canDouble)||(k==='P'&&a.opt.canSplit)||(k==='R'&&a.opt.canSurrender));
+  const sur=RULES.surrender&&RULES.holeCard;
+  const ins=G.insAsk;
+  you.innerHTML=`<h3>${s.hands.length>1?'Your hands':'Your hand'}</h3>
+    <div class="tbl-hands">${s.hands.map((h,hi)=>`<div class="tbl-hand${a&&a.hi===hi?' focus':''}"><div class="mcs">${h.cards.map(TBL.mcHTML).join('')}</div><span class="tbl-lbl"><b>${TBL.totalText(h.cards)}</b>${h.doubled?' ×2':''} · ${num(h.bet)} u</span></div>`).join('')}</div>
+    ${ins?`<p class="hint" style="color:var(--text)">The dealer shows an Ace. Insurance costs half your bet and pays 2:1 if the dealer has blackjack.</p>
+      <div class="row"><button class="btn ghost" id="ins-yes">Insurance</button><button class="btn" id="ins-no">No insurance</button></div>`
+    :`<div class="acts">
+      <button class="btn ghost" data-a="H"${can('H')?'':' disabled'}>Hit<kbd>H</kbd></button>
+      <button class="btn ghost" data-a="S"${can('S')?'':' disabled'}>Stand<kbd>S</kbd></button>
+      <button class="btn ghost" data-a="D"${can('D')?'':' disabled'}>Double<kbd>D</kbd></button>
+      <button class="btn ghost ${sur?'':'wide'}" data-a="P"${can('P')?'':' disabled'}>Split<kbd>P</kbd></button>
+      ${sur?`<button class="btn ghost" data-a="R"${can('R')?'':' disabled'}>Surrender<kbd>R</kbd></button>`:''}
+    </div>`}
+    ${coachHTML()}`;
+  you.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>act(b.dataset.a));
+  if(ins){document.getElementById('ins-yes').onclick=()=>answerIns(true);document.getElementById('ins-no').onclick=()=>answerIns(false)}
+  bindWhy(you);
+}
+function humanDecide(hi,h,opt,ctx){
+  G.panel='play';
+  return G.pacer.wait(res=>{G.ask={hi,h,opt,ctx,res};renderYou()});
+}
+function act(k){
+  const a=G&&G.ask;if(!a)return;
+  if(!(k==='H'||k==='S'||(k==='D'&&a.opt.canDouble)||(k==='P'&&a.opt.canSplit)||(k==='R'&&a.opt.canSurrender)))return;
+  const up=a.ctx.dealer.cards[0].r,tc=curTC();
+  const exp=CFG.deviations?countedPlay(a.h.cards,up,a.opt,RULES,tc):{...basicPlay(a.h.cards,up,a.opt,RULES),dev:null};
+  const ok=k===exp.a;
+  G.st.dec++;if(!ok)G.st.decWrong++;
+  if(exp.row){
+    const id=cellId(exp.cat,exp.row,exp.ui),c=cells[id]||{id,seen:0,wrong:0};
+    c.seen++;if(!ok)c.wrong++;cells[id]=c;Store.putCell(c);
+  }
+  const hand=exp.row?`${handName(exp.cat,exp.row)} vs ${upName(exp.ui)}`:`${TBL.totalText(a.h.cards)} vs ${up}`;
+  const why=exp.row?` <button class="why" data-why="${exp.cat}|${exp.row}|${exp.ui}">Why?</button>`:'';
+  if(ok)setCoach(exp.dev?`✓ ${ACTION[k]}. ${devText(exp.dev,exp.chart)}`:`✓ ${ACTION[k]} · ${hand}`,'ok');
+  else setCoach(`<b>${ACTION[exp.a]}</b> was the play · ${hand}${exp.dev?`. ${devText(exp.dev,exp.chart)} True count ${fmt(tc)}.`:''}${why}`,'bad');
+  G.ask=null;
+  a.res(k);
+}
+function humanInsurance(ctx){
+  G.panel='play';
+  return G.pacer.wait(res=>{G.insAsk={res};renderYou()});
+}
+function answerIns(take){
+  const q=G.insAsk;if(!q)return;
+  G.insAsk=null;
+  const tc=curTC(),want=CFG.deviations&&tc>=INSURANCE_INDEX;
+  G.st.dec++;
+  if(take===want)setCoach(want?`✓ Insurance at true count ${fmt(tc)}: at +3 or higher it pays.`:`✓ No insurance${CFG.deviations?` at true count ${fmt(tc)}`:''}. Without a high count it loses money.`,'ok');
+  else{G.st.decWrong++;setCoach(want?`<b>Take insurance</b> at true count ${fmt(tc)}: at +3 or higher enough tens are left that it pays.`:`<b>No insurance</b>${CFG.deviations?` at true count ${fmt(tc)}: it only pays from +3`:': without counting it always loses money'}.`,'bad')}
+  q.res(take);
+}
+
+/* Round end, count checks, shoe end */
+function showRoundEnd(mine,r,res){
+  G.panel='end';G.ask=null;
+  const lines=mine.hands.map(h=>`${h.res} ${h.net===0?'':fmtU(h.net)}`).join(' · ');
+  const ins=mine.insured?` · insurance ${fmtU(mine.insNet)}`:'';
+  you.innerHTML=`<h3>Round over</h3>
+    <p class="lead">${mine.net>0?'You win':mine.net<0?'You lose':'Push'} ${mine.net===0?'':fmtU(mine.net)+' u'}</p>
+    <p class="hint">${lines}${ins} · bankroll ${num(bankroll)} u</p>
+    <button class="btn" id="next">${G.shoe.pastCut()?'Finish the shoe':'Next round'}</button>
+    ${coachHTML()}`;
+  bindWhy(you);
+  document.getElementById('next').onclick=()=>{G.panel='bet';res()};
+  document.getElementById('next').focus();
+}
+function keypadHTML(id){return `<div class="keypad" id="${id}">${['1','2','3','4','5','6','7','8','9','±','0','⌫'].map(k=>`<button class="btn ghost" data-k="${k}" aria-label="${k==='±'?'Change sign':k==='⌫'?'Delete':k}">${k}</button>`).join('')}</div>`}
+function bindKeypad(onChange){
+  let entry='',neg=false;
+  const val=()=>{const v=parseInt(entry||'0',10);return neg?-v:v};
+  const text=()=>entry?fmt(val()):(neg?'−':'0');
+  const key=k=>{if(k==='±')neg=!neg;else if(k==='⌫')entry=entry.slice(0,-1);else if(entry.length<2)entry=(entry==='0'?'':entry)+k;onChange(text())};
+  you.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>key(b.dataset.k));
+  G.keyIn=key;
+  return val;
+}
+function showCheck(res){
+  G.panel='check';G.ask=null;
+  const rc=G.rc,left=decksLeft(),leftHalf=Math.max(0.5,Math.round(left*2)/2);
+  const okTC=new Set([roundTC(rc/left),roundTC(rc/leftHalf)]);
+  const step1=()=>{
+    you.innerHTML=`<h3>Count check</h3><p class="lead">Running count?</p><div class="bigval" id="kv">0</div>${keypadHTML('kp')}<button class="btn" id="kok">Next</button>`;
+    const v=bindKeypad(t=>document.getElementById('kv').textContent=t);
+    G.keyOk=()=>step2(v());document.getElementById('kok').onclick=G.keyOk;
+  };
+  const step2=rcYou=>{
+    you.innerHTML=`<h3>Count check</h3><p class="lead">True count?</p><p class="hint">Look at the discard tray: ${CFG.decks} decks in the shoe. ${CFG.rounding==='floor'?'Round down.':'Round to the nearest whole number.'}</p><div class="bigval" id="kv">0</div>${keypadHTML('kp')}<button class="btn" id="kok">Check</button>`;
+    const v=bindKeypad(t=>document.getElementById('kv').textContent=t);
+    G.keyOk=()=>step3(rcYou,v());document.getElementById('kok').onclick=G.keyOk;
+  };
+  const step3=(rcYou,tcYou)=>{
+    G.keyOk=null;G.keyIn=null;
+    const rcOk=rcYou===rc,tcOk=okTC.has(tcYou);
+    G.st.checks++;if(rcOk&&tcOk)G.st.checksRight++;
+    const tcShow=roundTC(rc/leftHalf);
+    you.innerHTML=`<h3>Count check</h3>
+      <dl class="summary"><div><dt>Running count</dt><dd style="color:var(--${rcOk?'good':'bad'})">${fmt(rc)}</dd></div><div><dt>True count</dt><dd style="color:var(--${tcOk?'good':'bad'})">${fmt(tcShow)}</dd></div></dl>
+      <p class="hint">${rcOk?'Running count right.':`You said ${fmt(rcYou)}.`} ${tcOk?'True count right.':`You said ${fmt(tcYou)}.`} ${fmt(rc)} ÷ ${num(leftHalf)} decks left ≈ ${(rc/leftHalf).toFixed(1)}${rcOk?'':` Carry on from ${fmt(rc)}.`}</p>
+      <button class="btn" id="kok">Continue</button>`;
+    G.keyOk=()=>{G.keyOk=null;res()};document.getElementById('kok').onclick=G.keyOk;
+  };
+  step1();
+}
+async function showShoeEnd(res){
+  G.panel='shoe';G.ask=null;
+  const st=G.st;
+  const rec={ts:Date.now(),...st,decks:CFG.decks,players:CFG.players,deviations:CFG.deviations,rules:{...RULES}};
+  shoes.push(await Store.addShoe(rec));
+  you.innerHTML=`<h3>Cut card · shoe over</h3>
+    <p class="lead">${st.net>=0?'Up':'Down'} ${fmtU(st.net)} units</p>
+    <dl class="summary">
+      <div><dt>Plays</dt><dd>${st.dec-st.decWrong}/${st.dec}</dd></div>
+      <div><dt>Bets</dt><dd>${st.bets-st.betsWrong}/${st.bets}</dd></div>
+      <div><dt>Count checks</dt><dd>${st.checksRight}/${st.checks}</dd></div>
+      <div><dt>Rounds</dt><dd>${st.rounds}</dd></div>
+    </dl>
+    <p class="hint">A single shoe is mostly luck: judge yourself by plays, bets and count checks, not by the result.</p>
+    <button class="btn" id="next">New shoe</button>`;
+  document.getElementById('next').onclick=()=>{res();newShoe()};
+}
+document.addEventListener('keydown',e=>{
+  if(!G||document.getElementById('view-play').hidden||!document.getElementById('sheet').hidden||e.metaKey||e.ctrlKey||e.altKey)return;
+  const k=e.key;
+  if(G.panel==='check'){
+    if(/^[0-9]$/.test(k)&&G.keyIn){e.preventDefault();G.keyIn(k)}
+    else if((k==='-'||k==='+')&&G.keyIn){e.preventDefault();G.keyIn('±')}
+    else if(k==='Backspace'&&G.keyIn){e.preventDefault();G.keyIn('⌫')}
+    else if(k==='Enter'&&G.keyOk){e.preventDefault();G.keyOk()}
+    return;
+  }
+  if(G.ask&&'HSDPR'.includes(k.toUpperCase())&&k.length===1){e.preventDefault();act(k.toUpperCase());return}
+  if(G.insAsk&&(k==='y'||k==='n')){e.preventDefault();answerIns(k==='y')}
+});
+function startPlay(){
+  const n=G&&G.shoeNo||0;stopGame();G={shoeNo:n,lastBet:1};
+  newShoe();
+}
+function stopGame(){if(G&&G.pacer)G.pacer.kill();G=null}
+
+/* ---------- Stats ---------- */
+const SCORE={good:{c:'var(--good)'},ok:{c:'var(--ok)'},slow:{c:'var(--slow)'},bad:{c:'var(--bad)'}};
+const dtf=new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+const pctOf=(a,b)=>b?Math.round(100*a/b)+'%':'–';
+function bankChart(list){
+  const W=460,H=220,L=48,R=10,T=20,B=28,w=W-L-R,h=H-T-B;
+  const pts=[0];list.forEach(s=>pts.push(pts[pts.length-1]+s.net));
+  const lo=Math.min(0,...pts),hi=Math.max(0,...pts),span=Math.max(10,hi-lo),pad=span*0.1;
+  const y0=lo-pad,y1=hi+pad,n=pts.length;
+  const x=i=>L+(n===1?w/2:i/(n-1)*w),y=v=>T+h-(v-y0)/(y1-y0)*h;
+  const step=[5,10,20,25,50,100,200,500].find(s=>(y1-y0)/s<=5)||1000;
+  let g='';
+  for(let v=Math.ceil(y0/step)*step;v<=y1;v+=step)g+=`<line class="cgrid" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text class="cax" x="${L-8}" y="${y(v)+4}" text-anchor="end">${v>0?'+':''}${v}</text>`;
+  g+=`<line x1="${L}" x2="${W-R}" y1="${y(0)}" y2="${y(0)}" style="stroke:var(--muted);stroke-width:1"/>`;
+  g+=`<polyline points="${pts.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')}" style="fill:none;stroke:var(--brass);stroke-width:2"/>`;
+  g+=`<circle cx="${x(n-1)}" cy="${y(pts[n-1])}" r="4" style="fill:var(--brass)"/>`;
+  g+=`<text class="cax" x="${L}" y="${T-6}">units won or lost, shoe by shoe</text>`;
+  return `<div class="chartbox"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cumulative result over ${n-1} shoes">${g}</svg></div>`;
+}
+let shown=30;
+function renderStats(){
+  const body=document.getElementById('stats-body');
+  const missedCells=Object.values(cells).filter(c=>c.wrong>0).sort((a,b)=>b.wrong-a.wrong||b.wrong/b.seen-a.wrong/a.seen).slice(0,10);
+  if(!shoes.length&&!missedCells.length){body.innerHTML=`<div class="empty"><strong>No shoes yet</strong>Play until the cut card comes out and the shoe shows up here. Results stay in this browser.</div>`;return}
+  const T=shoes.reduce((a,s)=>{for(const k of ['rounds','hands','net','dec','decWrong','bets','betsWrong','checks','checksRight'])a[k]=(a[k]||0)+s[k];return a},{});
+  const recent=shoes.slice().reverse();
+  body.innerHTML=`<dl class="summary" style="max-width:none;grid-template-columns:repeat(2,1fr)">
+      <div><dt>Plays right</dt><dd>${pctOf((T.dec||0)-(T.decWrong||0),T.dec)}</dd></div>
+      <div><dt>Bets right</dt><dd>${pctOf((T.bets||0)-(T.betsWrong||0),T.bets)}</dd></div>
+      <div><dt>Count checks</dt><dd>${pctOf(T.checksRight||0,T.checks)}</dd></div>
+      <div><dt>Result</dt><dd>${fmtU(T.net||0)} u</dd></div>
+    </dl>
+    ${shoes.length?bankChart(shoes)+`<p class="note">${shoes.length} shoe${shoes.length>1?'s':''}, ${T.rounds} rounds. Over a few shoes the result is mostly luck; the percentages above are what you control.</p>`:''}
+    ${missedCells.length?`<h3 class="sec">Most-missed plays</h3><p class="note">Tap a hand for the explanation.</p><ul class="list">${missedCells.map(c=>{const [cat,row,up]=c.id.split('-'),ui=UPS.indexOf(up),a=actionFor(cat,row,ui);
+      return `<li><i class="dot" style="background:var(--bad)"></i><span class="what"><button class="linkish" data-c="${cat}" data-r="${row}" data-u="${ui}">${rowLabel(cat,row)} vs ${upName(ui)}</button><span class="mtag a-${a}">${ACTION[a]}</span></span><span class="num2">${c.wrong}×<small>wrong</small></span><span class="when">${c.seen-c.wrong} of ${c.seen} right${CFG.deviations?' · chart play shown':''}</span></li>`}).join('')}</ul>`:''}
+    ${shoes.length?`<h3 class="sec">Shoes</h3><ul class="list">${recent.slice(0,shown).map(s=>`<li><i class="dot" style="background:${s.decWrong||s.betsWrong||s.checks-s.checksRight?'var(--ok)':'var(--good)'}"></i>
+      <span class="what">${fmtU(s.net)} units · ${s.rounds} rounds</span>
+      <span class="num2">${pctOf(s.dec-s.decWrong,s.dec)}<small>plays</small></span>
+      <span class="when">${dtf.format(s.ts)} · bets ${s.bets-s.betsWrong}/${s.bets} · checks ${s.checksRight}/${s.checks}${s.deviations?' · deviations':''}</span></li>`).join('')}</ul>`:''}
+    <div class="row">${recent.length>shown?`<button class="btn ghost small" id="more">Show more</button>`:''}<button class="btn danger small" type="button" id="reset-stats">Delete history</button></div>`;
+  body.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>openSheet(b.dataset.c,b.dataset.r,+b.dataset.u));
+  const more=document.getElementById('more');if(more)more.onclick=()=>{shown+=30;renderStats()};
+  armButton(document.getElementById('reset-stats'),'Delete history','Tap again to delete shoes and mistakes',async()=>{await Store.clearHistory();shoes=[];cells={};renderStats()});
+}
+function armButton(btn,idle,armed,run){let t=null;btn.onclick=async()=>{if(btn.dataset.armed){clearTimeout(t);delete btn.dataset.armed;await run();return}btn.dataset.armed='1';btn.textContent=armed;t=setTimeout(()=>{delete btn.dataset.armed;btn.textContent=idle},3500)}}
+
+/* ---------- Settings view ---------- */
+function seg(key,opts,cur){return `<div class="chips">${opts.map(([v,t])=>`<button type="button" class="chip" data-set="${key}" data-v="${v}" aria-pressed="${String(cur)===String(v)}">${t}</button>`).join('')}</div>`}
+function renderSettings(msg){
+  document.getElementById('set-table').innerHTML=`
+    <div class="rule"><span class="lbl">Players at the table</span>${seg('players',[1,2,3,4,5,6,7].map(p=>[p,p]),CFG.players)}</div>
+    <div class="rule"><span class="lbl">Your seat</span>${seg('seat',Array.from({length:CFG.players},(_,i)=>[i+1,i+1]),Math.min(CFG.seat,CFG.players))}<small>Seat 1 is dealt first ("first base"); the last seat plays just before the dealer.</small></div>
+    <div class="rule"><span class="lbl">Shoe</span>${seg('decks',[[6,'6 decks'],[8,'8 decks']],CFG.decks)}</div>
+    <div class="rule"><span class="lbl">Cut card</span>${seg('pen',[[0.65,'65%'],[0.7,'70%'],[0.75,'75%'],[0.8,'80%'],[0.85,'85%']],CFG.pen)}<small>How deep the dealer deals before shuffling. Deeper is better for counters; 75% is typical.</small></div>
+    <div class="rule"><span class="lbl">Dealing speed</span>${seg('speed',SPEEDS.map(([n,v])=>[v,`${n} ${num(v)} s`]),CFG.speed)}<small>Seconds per card. Your own decisions are never timed.</small></div>
+    <div class="setrow"><span class="lbl">Bankroll: <b>${num(bankroll)} u</b></span><span style="display:flex;gap:8px;align-items:center"><label for="bank-start" class="hint">Start with</label><input id="bank-start" class="num-in" inputmode="numeric" value="${CFG.startBank}"><button type="button" class="btn ghost small" id="bank-reset">Reset bankroll</button></span></div>
+    <p class="hint" role="status">${msg||'Changes to players, seat, shoe and cut card start a new shoe.'}</p>`;
+  const RD=[['holeCard','Hole card',[[false,'No (Europe)'],[true,'Yes (US)']]],['h17','Dealer on soft 17',[[false,'Stands'],[true,'Hits']]],['das','Double after split',[[true,'Allowed'],[false,'Not allowed']]],['surrender','Late surrender',[[false,'Not offered'],[true,'Offered']]]];
+  document.getElementById('set-rules').innerHTML=RD.map(([k,l,o])=>`<div class="rule"><span class="lbl">${l}</span><div class="chips">${o.map(([v,t])=>`<button type="button" class="chip" data-rule="${k}" data-v="${v}" aria-pressed="${RULES[k]===v}"${k==='surrender'&&!RULES.holeCard?' disabled':''}>${t}</button>`).join('')}</div></div>`).join('');
+  document.getElementById('set-coach').innerHTML=`
+    <div class="rule"><span class="lbl">Count-based plays (deviations)</span>${seg('deviations',[[false,'Off'],[true,'On']],CFG.deviations)}<small>On: the coach expects the Illustrious 18 and, where surrender is offered, the Fab 4, e.g. stand on 16 vs 10 at true count 0 or higher, insurance at +3. Off: plain basic strategy.</small></div>
+    <div class="rule"><span class="lbl">True count rounding</span>${seg('rounding',[['nearest','Nearest'],['floor','Round down']],CFG.rounding)}<small>Used for bets, deviations and count checks.</small></div>`;
+  document.querySelectorAll('[data-set]').forEach(b=>b.onclick=async()=>{
+    const k=b.dataset.set,raw=b.dataset.v;
+    const v=k==='deviations'?raw==='true':k==='rounding'?raw:+raw;
+    const restart=['players','seat','decks','pen'].includes(k)&&CFG[k]!==v;
+    CFG[k]=v;if(k==='players'&&CFG.seat>v)CFG.seat=v;
+    await Store.set('cfg',CFG);
+    if(restart)stopGame();
+    renderSettings(restart?'Saved. A new shoe starts when you go back to Play.':'Saved.');
+  });
+  document.querySelectorAll('[data-rule]').forEach(b=>b.onclick=async()=>{
+    RULES[b.dataset.rule]=b.dataset.v==='true';await Store.setRules(RULES);stopGame();renderSettings('Saved. A new shoe starts when you go back to Play.');
+  });
+  const bi=document.getElementById('bank-start');
+  document.getElementById('bank-reset').onclick=async()=>{
+    const v=parseInt(bi.value,10);
+    if(!(v>=10&&v<=100000)){bi.setAttribute('aria-invalid','true');renderSettingsMsg('Enter a starting bankroll between 10 and 100000 units.');return}
+    CFG.startBank=v;bankroll=v;await Store.set('cfg',CFG);await Store.set('bankroll',bankroll);if(G&&G.shoe)updateBar();renderSettings(`Bankroll reset to ${v} units.`);
+  };
+}
+function renderSettingsMsg(t){const s=document.querySelector('#set-table [role="status"]');if(s)s.textContent=t}
+
+/* ---------- Routing ---------- */
+const VIEWS=['play','stats','settings'];
+let current=null;
+function hashView(){try{const h=location.hash.slice(1);return VIEWS.includes(h)?h:null}catch(e){return null}}
+function go(v){try{history.replaceState(null,'','#'+v)}catch(e){}show_(v)}
+function show_(v){
+  closeSheet();
+  current=v;
+  VIEWS.forEach(k=>document.getElementById('view-'+k).hidden=k!==v);
+  document.getElementById('tab-play').setAttribute('aria-selected',v==='play');
+  ['stats','settings'].forEach(k=>{const b=document.getElementById('nav-'+k);if(k===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+  if(v==='play'&&(!G||!G.shoe))startPlay();
+  if(v==='stats'){shown=30;renderStats()}
+  if(v==='settings')renderSettings();
+}
+document.getElementById('tab-play').onclick=()=>{if(current!=='play')go('play')};
+['stats','settings'].forEach(k=>document.getElementById('nav-'+k).onclick=()=>{if(current!==k)go(k)});
+window.addEventListener('hashchange',()=>show_(hashView()||'play'));
+
+(async()=>{
+  await Store.open();
+  const c=await Store.get('cfg');if(c&&typeof c==='object')CFG={...DEFAULT_CFG,...c};
+  const r=await Store.rules();if(r&&typeof r==='object')RULES={...DEFAULT_RULES,...r};
+  const b=await Store.get('bankroll');bankroll=typeof b==='number'?b:CFG.startBank;
+  shoes=(await Store.shoes()).sort((a,b)=>a.id-b.id);
+  (await Store.cells()).forEach(x=>cells[x.id]=x);
+  show_(hashView()||'play');
+})();
+</script>
+
+<script>
+(function(){const n=document.querySelector('.nav');if(!n)return;
+const upd=()=>{n.classList.toggle('more-r',n.scrollLeft+n.clientWidth<n.scrollWidth-2);n.classList.toggle('more-l',n.scrollLeft>2)};
+n.addEventListener('scroll',upd,{passive:true});addEventListener('resize',upd);
+const a=n.querySelector('[aria-current="page"]');if(a){const d=a.getBoundingClientRect().right-n.getBoundingClientRect().right;if(d>0)n.scrollLeft+=d+24}
+upd();})();
+</script>
+</body>
+</html>
